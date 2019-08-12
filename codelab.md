@@ -1,9 +1,9 @@
 author: Maxime LUMEAU, Robin CAROFF and Pierre TIBULLE
 summary: Kotlin Multiplatform Workshop
-id: codelab-kotlin-Multiplatform
+id: codelab-kotlin-multiplatform
 categories: codelab,kotlin
 environments: Web
-status: Draft
+status: Published
 feedback link: https://github.com/RobinCaroff/workshop-kmp
 analytics account: ???
 
@@ -32,11 +32,22 @@ You will learn how to:
 * Improve the shared library
   - Use Coroutines to validate the asynchronous ability
   - Use the multiplatform Http client Ktor to call a Json Api 
-  
-The application we're going to create will <TODO>.
 
 **Resources:** 
-* This codelab is inspired by the Jetbrains tutorial : https://kotlinlang.org/docs/tutorials/native/mpp-ios-android.html
+* This codelab is inspired by the Jetbrains [tutorial](https://kotlinlang.org/docs/tutorials/native/mpp-ios-android.html)
 
-<TODO tout le reste !!!>
+## Environment Setup
+Duration: 0:04:00
+
+You need [Android Studio](https://developer.android.com/studio/) 3.4+ for the Android part of the tutorial. 
+
+Positive
+: You can also use [IntelliJ IDEA](https://jetbrains.com/idea/) Community or Ultimate edition.
+
+The Kotlin plugin 1.3.41 or higher should be installed in the IDE. This can be verified via Language & Frameworks | Kotlin Updates section in the Settings (or Preferences) window.
+
+For the iOS part of the tutorial, you need a macOS 10.14+ host with Xcode 10.3+ and the tools installed and configured.
+
+Negative
+: If you don't fill in the requirements at least for the Android part, please consider pair programming !!!
 
