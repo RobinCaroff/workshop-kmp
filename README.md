@@ -1,44 +1,4 @@
-author: Maxime LUMEAU, Robin CAROFF and Pierre TIBULLE
-summary: Kotlin Multiplatform Workshop
-id: codelab-kotlin-Multiplatform
-categories: codelab,kotlin
-environments: Web
-status: Published
-feedback link: https://github.com/RobinCaroff/workshop-kmp
-analytics account: ???
-
 # Workshop Kotlin Multiplatform
-
-## CodeLab Overview
-Duration: 0:02:00
-
-Sharing Kotlin code between iOS and Android 
-
-In this codelab we will create an iOS and Android application, by making use of Kotlin's code sharing features. 
-For Android we'll be using Kotlin/JVM, while for iOS it will be Kotlin/Native.
-
-This codelab will show you the ability to share code within Kotlin and the benefits it provides. While what we'll be looking at is a simplified application, what is shown here can be applied to real world applications, independent of their size or complexity.
-
-You will learn how to:
-
-* Create an Android app with Android Studio
-* Create a shared Kotlin library
-  - Use it from Android app
-  - Start the Android application
-* Create an iOS app with Xcode
-  - Use the shared Kotlin library from iOS app
-  - Use Kotlin from Swift
-  - Start the iOS application
-* Improve the shared library
-  - Use Coroutines to validate the asynchronous ability
-  - Use the multiplatform Http client Ktor to call a Json Api 
-  
-The application we're going to create will <TODO>.
-
-**Resources:** 
-* This codelab is inspired by the Jetbrains tutorial : https://kotlinlang.org/docs/tutorials/native/mpp-ios-android.html
-
-<TODO tout le reste !!!>
 
 ## Environment Setup
 Duration: 0:04:00
