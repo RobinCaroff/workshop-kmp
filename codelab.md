@@ -3,7 +3,7 @@ summary: Kotlin Multiplatform Workshop
 id: codelab-kotlin-multiplatform
 categories: codelab,kotlin
 environments: Web
-status: Published
+status: Draft
 feedback link: https://github.com/RobinCaroff/workshop-kmp
 analytics account: ???
 
@@ -50,4 +50,7 @@ For the iOS part of the tutorial, you need a macOS 10.14+ host with Xcode 10.3+ 
 
 Negative
 : If you don't fill in the requirements at least for the Android part, please consider pair programming !!!
+
+## Checkout the Git repo
+Duration: 0:05:00
 
