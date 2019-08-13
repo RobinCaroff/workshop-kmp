@@ -1,0 +1,82 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Workshop Kotlin Multiplatform</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid="???"
+                  id="codelab-kotlin-multiplatform"
+                  title="Workshop Kotlin Multiplatform"
+                  environment="web"
+                  feedback-link="https://github.com/RobinCaroff/workshop-kmp">
+    
+      <google-codelab-step label="CodeLab Overview" duration="2">
+        <p>Sharing Kotlin code between iOS and Android</p>
+<p>In this codelab we will create an iOS and Android application, by making use of Kotlin&#39;s code sharing features.<br>For Android we&#39;ll be using Kotlin/JVM, while for iOS it will be Kotlin/Native.</p>
+<p>This codelab will show you the ability to share code within Kotlin and the benefits it provides. While what we&#39;ll be looking at is a simplified application, what is shown here can be applied to real world applications, independent of their size or complexity.</p>
+<p>You will learn how to:</p>
+<ul>
+<li>Create an Android app with Android Studio</li>
+<li>Create a shared Kotlin library<br><br><ul>
+<li>Use it from Android app</li>
+<li>Start the Android application</li>
+</ul>
+</li>
+<li>Create an iOS app with Xcode<br><br><ul>
+<li>Use the shared Kotlin library from iOS app</li>
+<li>Use Kotlin from Swift</li>
+<li>Start the iOS application</li>
+</ul>
+</li>
+<li>Improve the shared library<br><br><ul>
+<li>Use Coroutines to validate the asynchronous ability</li>
+<li>Use the multiplatform Http client Ktor to call a Json Api</li>
+</ul>
+</li>
+</ul>
+<p><strong>Resources:</strong></p>
+<ul>
+<li>This codelab is inspired by the Jetbrains <a href="https://kotlinlang.org/docs/tutorials/native/mpp-ios-android.html" target="_blank">tutorial</a></li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Environment Setup" duration="4">
+        <p>You need <a href="https://developer.android.com/studio/" target="_blank">Android Studio</a> 3.4+ for the Android part of the tutorial.</p>
+<aside class="special"><p>You can also use <a href="https://jetbrains.com/idea/" target="_blank">IntelliJ IDEA</a> Community or Ultimate edition.</p>
+</aside>
+<p>The Kotlin plugin 1.3.41 or higher should be installed in the IDE. This can be verified via Language &amp; Frameworks | Kotlin Updates section in the Settings (or Preferences) window.</p>
+<p>For the iOS part of the tutorial, you need a macOS 10.14+ host with Xcode 10.3+ and the tools installed and configured.</p>
+<aside class="warning"><p>If you don&#39;t fill in the requirements at least for the Android part, please consider pair programming !!!</p>
+</aside>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+
+</body>
+</html>
