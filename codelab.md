@@ -3,7 +3,7 @@ summary: Kotlin Multiplatform Workshop
 id: codelab-kotlin-multiplatform
 categories: codelab,kotlin
 environments: Web
-status: Published
+status: Draft
 feedback link: https://github.com/RobinCaroff/workshop-kmp
 analytics account: ???
 

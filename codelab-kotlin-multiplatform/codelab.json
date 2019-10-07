@@ -3,7 +3,7 @@
   "format": "html",
   "prefix": "https://storage.googleapis.com",
   "mainga": "UA-49880327-14",
-  "updated": "2019-10-07T22:12:09+02:00",
+  "updated": "2019-10-07T22:15:35+02:00",
   "id": "codelab-kotlin-multiplatform",
   "duration": 26,
   "title": "Workshop Kotlin Multiplatform",
@@ -11,7 +11,7 @@
   "source": "codelab.md",
   "theme": "",
   "status": [
-    "published"
+    "draft"
   ],
   "category": [
     "codelab",
