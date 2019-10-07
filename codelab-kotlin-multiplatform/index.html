@@ -28,33 +28,29 @@
                   feedback-link="https://github.com/RobinCaroff/workshop-kmp">
     
       <google-codelab-step label="CodeLab Overview" duration="2">
-        <p>Sharing Kotlin code between iOS and Android</p>
-<p>In this codelab we will create an iOS and Android application, by making use of Kotlin&#39;s code sharing features.<br>For Android we&#39;ll be using Kotlin/JVM, while for iOS it will be Kotlin/Native.</p>
+        <h3 is-upgraded>Sharing Kotlin code between iOS and Android</h3>
+<p>In this codelab you will create an iOS and Android application, by making use of Kotlin&#39;s code sharing features.<br>For Android you&#39;ll be using Kotlin/JVM, while for iOS it will be Kotlin/Native.</p>
 <p>This codelab will show you the ability to share code within Kotlin and the benefits it provides. While what we&#39;ll be looking at is a simplified application, what is shown here can be applied to real world applications, independent of their size or complexity.</p>
 <p>You will learn how to:</p>
+<h3 is-upgraded>Create an Android app with Android Studio</h3>
+<h3 is-upgraded>Create a shared Kotlin library</h3>
 <ul>
-<li>Create an Android app with Android Studio</li>
-<li>Create a shared Kotlin library<br><br><ul>
 <li>Use it from Android app</li>
 <li>Start the Android application</li>
 </ul>
-</li>
-<li>Create an iOS app with Xcode<br><br><ul>
+<h3 is-upgraded>Create an iOS app with Xcode</h3>
+<ul>
 <li>Use the shared Kotlin library from iOS app</li>
 <li>Use Kotlin from Swift</li>
 <li>Start the iOS application</li>
 </ul>
-</li>
-<li>Improve the shared library<br><br><ul>
+<h3 is-upgraded>Improve the shared library</h3>
+<ul>
 <li>Use Coroutines to validate the asynchronous ability</li>
 <li>Use the multiplatform Http client Ktor to call a Json Api</li>
 </ul>
-</li>
-</ul>
-<p><strong>Resources:</strong></p>
-<ul>
-<li>This codelab is inspired by the Jetbrains <a href="https://kotlinlang.org/docs/tutorials/native/mpp-ios-android.html" target="_blank">tutorial</a></li>
-</ul>
+<aside class="special"><p>This codelab is inspired by the Jetbrains <a href="https://kotlinlang.org/docs/tutorials/native/mpp-ios-android.html" target="_blank">tutorial</a> for the first steps</p>
+</aside>
 
 
       </google-codelab-step>
@@ -67,6 +63,84 @@
 <p>For the iOS part of the tutorial, you need a macOS 10.14+ host with Xcode 10.3+ and the tools installed and configured.</p>
 <aside class="warning"><p>If you don&#39;t fill in the requirements at least for the Android part, please consider pair programming !!!</p>
 </aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="STEP ONE - Initialize the project" duration="10">
+        <h3 is-upgraded>In this step, we check that everything is well configured !</h3>
+<p>Clone the workshop project repository :</p>
+<pre><code>git clone https://github.com/mlumeau/workshop-kmp.git
+</code></pre>
+<p>Checkout the branch step_two_hellokotlinmp :</p>
+<pre><code>cd workshop-kmp
+git checkout step_two_hellokotlinmp
+</code></pre>
+<p>This project contain an Android app, a library and an iOS project.</p>
+<h3 is-upgraded>Launch the Android Studio IDE and open the project.</h3>
+<p>The project should sync and you should be able to compile and run the Android application on an emulator or a real device.</p>
+<h3 is-upgraded>Let&#39;s check that it works!</h3>
+<p>TODO - Add a picture of the app launched on an Android device</p>
+<aside class="special"><p>In the project, you can see the kore module which will contain the code for the multiplatform Android/iOS library.</p>
+</aside>
+<h2 is-upgraded>For mac user :</h2>
+<p>First you have to prepare the framework for iOS</p>
+<pre><code>.gradlew :kore:packForXCode 
+</code></pre>
+<p>It creates the directory kore/build/xcode-frameworks which contains a gradlew executable and the framework for Xcode.</p>
+<p>Now install the pods :</p>
+<pre><code>cd iosApp/kosmos
+pod install
+</code></pre>
+<aside class="warning"><p>In case of errors, try to reinstall pods with the last version of cocoapods</p>
+</aside>
+<pre><code>sudo gem install cocoapods
+pod deintegrate
+rm Podfile.lock
+pod install
+</code></pre>
+<h3 is-upgraded>Now you can open the project in Xcode</h3>
+<p>by clicking on ../workshop-kmp/iosApp/kosmos/kosmos.xcworkspace</p>
+<p>You can compile and run the project on an iOS emulator</p>
+<h2 is-upgraded>If everything&#39;s fine, let&#39;s go to the second step !!!</h2>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="STEP TWO - Initialize the project" duration="10">
+        <h3 is-upgraded>In this step, you will implement your first multiplatform code !</h3>
+<p>First add this code in the common directory : kore/src/commonMain/kotlin/xyz/mlumeau/kosmos/kore/common.kt</p>
+<pre><code>package xyz.mlumeau.kosmos.kore
+
+expect fun platformName(): String
+
+fun createApplicationScreenMessage(): String {
+    return &#34;Kotlin Rocks on ${platformName()}&#34;
+}
+</code></pre>
+<aside class="special"><p>The keyword ‘expect&#39; means that you have to implement these function in the specific code.</p>
+</aside>
+<p>Now edit the android directory : workshop-kmp/kore/src/androidMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt</p>
+<pre><code>package xyz.mlumeau.kosmos.kore
+
+actual fun platformName(): String {
+    return &#34;Android&#34;
+}
+</code></pre>
+<aside class="special"><p>The keyword ‘actual&#39; corresponds to the ‘expect&#39; in the specific code.</p>
+</aside>
+<h2 is-upgraded>For mac user :</h2>
+<p>Now edit the iOS directory : workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt</p>
+<pre><code>package xyz.mlumeau.kosmos.kore
+
+import platform.UIKit.UIDevice
+
+actual fun platformName(): String {
+    return UIDevice.currentDevice.systemName() +
+            &#34; &#34; +
+            UIDevice.currentDevice.systemVersion
+}
+</code></pre>
 
 
       </google-codelab-step>
