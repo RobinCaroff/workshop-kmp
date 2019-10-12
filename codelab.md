@@ -279,7 +279,7 @@ interface APODRepositoryCache {
 }
 ```
 
-And the implementation : .../kore/data/APODRepositoryCache.kt
+And the implementation : .../kore/data/APODRepositoryCacheImpl.kt
 
 ``` Kotlin
 package xyz.mlumeau.kosmos.kore.data
@@ -471,3 +471,144 @@ Run it and you should see :
 ![image_caption](./img/kmp_android_step3.png)
 
 ### For mac user :
+
+Now edit the iOS directory by creating a "dispatchers" file : workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/dispatchers.kt
+
+``` Kotlin
+package xyz.mlumeau.kosmos.kore
+
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.Runnable
+import platform.darwin.dispatch_async
+import platform.darwin.dispatch_get_main_queue
+import kotlin.coroutines.CoroutineContext
+
+
+internal class MainDispatcher: CoroutineDispatcher() {
+    override fun dispatch(context: CoroutineContext, block: Runnable) {
+        dispatch_async(dispatch_get_main_queue()) {
+            block.run()
+        }
+    }
+}
+
+internal abstract class Scope(
+    private val dispatcher: CoroutineDispatcher
+) : CoroutineScope {
+    private val job = Job()
+
+    override val coroutineContext: CoroutineContext
+        get() = dispatcher + job
+
+}
+
+internal class MainScope : Scope(MainDispatcher())
+```
+
+// TODO : Explain this dispatcher in iOS context...
+
+Now edit the iOS actual file : workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt
+
+``` Kotlin
+package xyz.mlumeau.kosmos.kore
+
+import kotlinx.coroutines.launch
+import platform.UIKit.UIDevice
+import xyz.mlumeau.kosmos.kore.data.APODRepositoryCacheImpl
+
+actual fun platformName(): String {
+    return UIDevice.currentDevice.systemName() +
+            " " +
+            UIDevice.currentDevice.systemVersion
+}
+
+fun showHelloCoroutine() {
+    MainScope().launch {
+        helloCoroutine()
+    }
+}
+
+actual fun requestAPOD(
+    apodRepositoryCache: APODRepositoryCacheImpl,
+    completion: (APOD) -> Unit,
+    failure: () -> Unit
+) {
+    MainScope().launch {
+        val apod = apodRepositoryCache.getAPOD()
+        if (apod != null) {
+            completion(apod)
+        } else {
+            failure()
+        }
+    }
+}
+```
+
+Back to Xcode !
+
+If you are familiar with Storyboard, add the progressbar, UIImageView and another textview for description in the MainView (see picture below) and add references to the MainViewController.
+![image_caption](./img/kmp_ios_storyboard_step3.png)
+If you prefer, download the [storyboard from the next step](https://github.com/mlumeau/workshop-kmp/blob/step_four_remoterepository/iosApp/kosmos/kosmos/Base.lproj/Main.storyboard).
+
+And then update the MainViewController code...
+
+``` Swift
+import UIKit
+import Nuke
+import kore
+
+class MainViewController: UIViewController {
+
+    @IBOutlet weak var apodIV: UIImageView!
+    @IBOutlet weak var titleTV: UITextView!
+    @IBOutlet weak var descTV: UITextView!
+    @IBOutlet weak var progress: UIActivityIndicatorView!
+    
+    private let apodRepository: APODRepositoryCache = APODRepositoryCacheImpl()
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        startLoadingData()
+    }
+    
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return self.style
+    }
+    var style:UIStatusBarStyle = .default
+
+}
+
+private extension MainViewController {
+    
+    private func startLoadingData() {
+        apodRepository.getAPOD(completion: { apod in
+            self.updateAPODData(apod: apod)
+            return .init()
+        }, failure: { () in
+            self.onLoadingError()
+            return .init()
+        })
+    }
+    
+    func updateAPODData(apod: APOD) {
+        let url = URL(string: apod.url ?? "")
+        self.titleTV.text = apod.title
+        self.descTV.text = apod.explanation
+        if(apod.media_type == "image"){
+            Nuke.loadImage(with: url!, into: self.apodIV)
+        } else {
+            //self.apodIV.frame = CGRect(x: 0,y: 0,width: 0,height: 0)
+        }
+        self.progress.isHidden = true
+    }
+    
+    func onLoadingError() {}
+}
+```
+
+You can compile and run the project on an iOS emulator :
+![image_caption](./img/kmp_ios_step3.png)
+
+#### If everything's fine, let's go to the step 4 !!!

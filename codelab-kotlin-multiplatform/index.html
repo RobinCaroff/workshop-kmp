@@ -101,7 +101,7 @@ pod install
 </code></pre>
 <h3 is-upgraded>Now you can open the project in Xcode</h3>
 <p>by clicking on ../workshop-kmp/iosApp/kosmos/kosmos.xcworkspace</p>
-<p>You can compile and run the project on an iOS emulator :<br><img alt="image_caption" src="img/775aa0e880e02528.png"></p>
+<p>You can compile and run the project on an iOS emulator :<br><img alt="image_caption" src="img/56d554d56953538c.png"></p>
 <h3 is-upgraded>If everything&#39;s fine, let&#39;s go to the second step !!!</h3>
 
 
@@ -202,7 +202,7 @@ class MainViewController: UIViewController {
 }
 
 </code></pre>
-<p>You can compile and run the project on an iOS emulator :<br><img alt="image_caption" src="img/9ee12afe96a15518.png"></p>
+<p>You can compile and run the project on an iOS emulator :<br><img alt="image_caption" src="img/3ad1739a7b43816a.png"></p>
 <h3 is-upgraded>If everything&#39;s fine, let&#39;s go to the step 3 !!!</h3>
 
 
@@ -407,6 +407,130 @@ class MainActivity : AppCompatActivity() {
 </code></pre>
 <p>Run it and you should see :<br><img alt="image_caption" src="img/3caccf69e2656ac6.png"></p>
 <h2 is-upgraded>For mac user :</h2>
+<p>Now edit the iOS directory by creating a &#34;dispatchers&#34; file : workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/dispatchers.kt</p>
+<pre><code>package xyz.mlumeau.kosmos.kore
+
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.Runnable
+import platform.darwin.dispatch_async
+import platform.darwin.dispatch_get_main_queue
+import kotlin.coroutines.CoroutineContext
+
+
+internal class MainDispatcher: CoroutineDispatcher() {
+    override fun dispatch(context: CoroutineContext, block: Runnable) {
+        dispatch_async(dispatch_get_main_queue()) {
+            block.run()
+        }
+    }
+}
+
+internal abstract class Scope(
+    private val dispatcher: CoroutineDispatcher
+) : CoroutineScope {
+    private val job = Job()
+
+    override val coroutineContext: CoroutineContext
+        get() = dispatcher + job
+
+}
+
+internal class MainScope : Scope(MainDispatcher())
+</code></pre>
+<p>// TODO : Explain this dispatcher in iOS context...</p>
+<p>Now edit the iOS actual file : workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt</p>
+<pre><code>package xyz.mlumeau.kosmos.kore
+
+import kotlinx.coroutines.launch
+import platform.UIKit.UIDevice
+import xyz.mlumeau.kosmos.kore.data.APODRepositoryCacheImpl
+
+actual fun platformName(): String {
+    return UIDevice.currentDevice.systemName() +
+            &#34; &#34; +
+            UIDevice.currentDevice.systemVersion
+}
+
+fun showHelloCoroutine() {
+    MainScope().launch {
+        helloCoroutine()
+    }
+}
+
+actual fun requestAPOD(
+    apodRepositoryCache: APODRepositoryCacheImpl,
+    completion: (APOD) -&gt; Unit,
+    failure: () -&gt; Unit
+) {
+    MainScope().launch {
+        val apod = apodRepositoryCache.getAPOD()
+        if (apod != null) {
+            completion(apod)
+        } else {
+            failure()
+        }
+    }
+}
+</code></pre>
+<p>Back to Xcode !</p>
+<p>If you are familiar with Storyboard, add the progressbar, UIImageView and another textview for description in the MainView (see picture below) and add references to the MainViewController.<br><img alt="image_caption" src="img/b4fb544c213212b6.png"><br>If you prefer, download the <a href="https://github.com/mlumeau/workshop-kmp/blob/step_four_remoterepository/iosApp/kosmos/kosmos/Base.lproj/Main.storyboard" target="_blank">storyboard from the next step</a>.</p>
+<p>And then update the MainViewController code...</p>
+<pre><code>import UIKit
+import Nuke
+import kore
+
+class MainViewController: UIViewController {
+
+    @IBOutlet weak var apodIV: UIImageView!
+    @IBOutlet weak var titleTV: UITextView!
+    @IBOutlet weak var descTV: UITextView!
+    @IBOutlet weak var progress: UIActivityIndicatorView!
+    
+    private let apodRepository: APODRepositoryCache = APODRepositoryCacheImpl()
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        startLoadingData()
+    }
+    
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return self.style
+    }
+    var style:UIStatusBarStyle = .default
+
+}
+
+private extension MainViewController {
+    
+    private func startLoadingData() {
+        apodRepository.getAPOD(completion: { apod in
+            self.updateAPODData(apod: apod)
+            return .init()
+        }, failure: { () in
+            self.onLoadingError()
+            return .init()
+        })
+    }
+    
+    func updateAPODData(apod: APOD) {
+        let url = URL(string: apod.url ?? &#34;&#34;)
+        self.titleTV.text = apod.title
+        self.descTV.text = apod.explanation
+        if(apod.media_type == &#34;image&#34;){
+            Nuke.loadImage(with: url!, into: self.apodIV)
+        } else {
+            //self.apodIV.frame = CGRect(x: 0,y: 0,width: 0,height: 0)
+        }
+        self.progress.isHidden = true
+    }
+    
+    func onLoadingError() {}
+}
+</code></pre>
+<p>You can compile and run the project on an iOS emulator :<br><img alt="image_caption" src="img/e0141634d78c0ad9.png"></p>
+<h3 is-upgraded>If everything&#39;s fine, let&#39;s go to the step 4 !!!</h3>
 
 
       </google-codelab-step>
