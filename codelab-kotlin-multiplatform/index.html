@@ -80,12 +80,12 @@ git checkout step_two_hellokotlinmp
 <h3 is-upgraded>Launch the Android Studio IDE and open the project.</h3>
 <p>The project should sync and you should be able to compile and run the Android application on an emulator or a real device.</p>
 <h3 is-upgraded>Let&#39;s check that it works!</h3>
-<p>TODO - Add a picture of the app launched on an Android device</p>
+<p>You should see something like :<br><img alt="image_caption" src="img/6adc87008ad3b6f0.png"></p>
 <aside class="special"><p>In the project, you can see the kore module which will contain the code for the multiplatform Android/iOS library.</p>
 </aside>
-<h2 is-upgraded>For mac user :</h2>
+<h3 is-upgraded>For mac user :</h3>
 <p>First you have to prepare the framework for iOS</p>
-<pre><code>.gradlew :kore:packForXCode 
+<pre><code>./gradlew :kore:packForXCode 
 </code></pre>
 <p>It creates the directory kore/build/xcode-frameworks which contains a gradlew executable and the framework for Xcode.</p>
 <p>Now install the pods :</p>
@@ -101,13 +101,13 @@ pod install
 </code></pre>
 <h3 is-upgraded>Now you can open the project in Xcode</h3>
 <p>by clicking on ../workshop-kmp/iosApp/kosmos/kosmos.xcworkspace</p>
-<p>You can compile and run the project on an iOS emulator</p>
-<h2 is-upgraded>If everything&#39;s fine, let&#39;s go to the second step !!!</h2>
+<p>You can compile and run the project on an iOS emulator :<br><img alt="image_caption" src="img/775aa0e880e02528.png"></p>
+<h3 is-upgraded>If everything&#39;s fine, let&#39;s go to the second step !!!</h3>
 
 
       </google-codelab-step>
     
-      <google-codelab-step label="STEP TWO - Initialize the project" duration="10">
+      <google-codelab-step label="STEP TWO - A very basic KMP project" duration="10">
         <h3 is-upgraded>In this step, you will implement your first multiplatform code !</h3>
 <p>First add this code in the common directory : kore/src/commonMain/kotlin/xyz/mlumeau/kosmos/kore/common.kt</p>
 <pre><code>package xyz.mlumeau.kosmos.kore
@@ -129,6 +129,44 @@ actual fun platformName(): String {
 </code></pre>
 <aside class="special"><p>The keyword ‘actual&#39; corresponds to the ‘expect&#39; in the specific code.</p>
 </aside>
+<p>In the Android main project &#34;androidApp&#34;, update the MainActivity :</p>
+<p>Add a TextView in res/layout/activity_main.xml</p>
+<pre><code>&lt;?xml version=&#34;1.0&#34; encoding=&#34;utf-8&#34;?&gt;
+
+&lt;RelativeLayout xmlns:android=&#34;http://schemas.android.com/apk/res/android&#34;
+        xmlns:tools=&#34;http://schemas.android.com/tools&#34;
+        android:layout_width=&#34;match_parent&#34;
+        android:layout_height=&#34;match_parent&#34;
+        tools:context=&#34;.views.MainActivity&#34;&gt;
+
+    &lt;TextView
+            android:id=&#34;@+id/title_tv&#34;
+            android:textStyle=&#34;bold&#34;
+            android:layout_width=&#34;wrap_content&#34;
+            android:layout_height=&#34;wrap_content&#34;
+            android:layout_centerInParent=&#34;true&#34; /&gt;
+
+&lt;/RelativeLayout&gt;
+</code></pre>
+<p>Handle this textview in java/xyz.mlumeau.kosmos.views/MainActivity (Kotlin file)</p>
+<pre><code>package xyz.mlumeau.kosmos.views
+
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import kotlinx.android.synthetic.main.activity_main.*
+import xyz.mlumeau.kosmos.R
+import xyz.mlumeau.kosmos.kore.createApplicationScreenMessage
+
+class MainActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        title_tv.text = createApplicationScreenMessage()
+    }
+}
+</code></pre>
+<p>Run it and you should see :<br><img alt="image_caption" src="img/a761533ae237d64a.png"></p>
 <h2 is-upgraded>For mac user :</h2>
 <p>Now edit the iOS directory : workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt</p>
 <pre><code>package xyz.mlumeau.kosmos.kore
@@ -141,6 +179,234 @@ actual fun platformName(): String {
             UIDevice.currentDevice.systemVersion
 }
 </code></pre>
+<p>Back to Xcode !</p>
+<p>If you are familiar with Storyboard, add a &#34;titleTV&#34; TextView in the center of the MainView and set the  reference to the MainViewController.titleTV @IBOutlet.<br>If you prefer, download the <a href="https://github.com/mlumeau/workshop-kmp/blob/step_three_localrepository/iosApp/kosmos/kosmos/Base.lproj/Main.storyboard" target="_blank">storyboard from the next step</a>.</p>
+<p>And then update the MainViewController to handle the &#34;titleTV&#34; textView</p>
+<pre><code>import UIKit
+import Nuke
+import kore
+
+class MainViewController: UIViewController {
+    
+    @IBOutlet weak var titleTV: UITextView!
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.titleTV.text = CommonKt.createApplicationScreenMessage()
+    }
+
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return self.style
+    }
+    var style:UIStatusBarStyle = .default
+}
+
+</code></pre>
+<p>You can compile and run the project on an iOS emulator :<br><img alt="image_caption" src="img/9ee12afe96a15518.png"></p>
+<h3 is-upgraded>If everything&#39;s fine, let&#39;s go to the step 3 !!!</h3>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="STEP THREE - Let&#39;s show something" duration="10">
+        <h3 is-upgraded>In this step, you will implement a local repository to simulate a call to the Nasa API APOD - &#34;Astronomy Picture Of the Day&#34; !</h3>
+<p>First create a common Model : kore/src/commonMain/kotlin/xyz/mlumeau/kosmos/kore/model/APOD.kt</p>
+<pre><code>package xyz.mlumeau.kosmos.kore.model
+
+import kotlinx.serialization.Optional
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class APOD(
+    @Optional val explanation: String? = null,
+    @Optional val media_type: String? = null,
+    @Optional val title : String? = null,
+    @Optional val url: String? = null
+)
+</code></pre>
+<p>Now the repository cache interface : .../kore/data/APODRepositoryCache.kt</p>
+<pre><code>package xyz.mlumeau.kosmos.kore.data
+
+import xyz.mlumeau.kosmos.kore.APOD
+
+interface APODRepositoryCache {
+    suspend fun getAPOD(): APOD?
+    fun getAPOD(completion: (APOD) -&gt; Unit, failure: () -&gt; Unit)
+}
+</code></pre>
+<p>And the implementation : .../kore/data/APODRepositoryCache.kt</p>
+<pre><code>package xyz.mlumeau.kosmos.kore.data
+
+import kotlinx.serialization.json.Json
+import xyz.mlumeau.kosmos.kore.model.APOD
+import xyz.mlumeau.kosmos.kore.requestAPOD
+
+class APODRepositoryCacheImpl : APODRepositoryCache {
+
+    override suspend fun getAPOD(): APOD? = Json.nonstrict.parse(APOD.serializer(), APOD_STUB)
+
+    override fun getAPOD(completion: (APOD) -&gt; Unit, failure: () -&gt; Unit) {
+        requestAPOD(this, completion, failure)
+    }
+
+    companion object {
+        private const val APOD_STUB =
+            &#34;{\&#34;date\&#34;:\&#34;2019-08-31\&#34;,\&#34;explanation\&#34;:\&#34;Few cosmic vistas excite the imagination like the Orion Nebula, an immense stellar nursery some 1,500 light-years away. Spanning about 40 light-years across the region, this infrared image from the Spitzer Space Telescope was constructed from data intended to monitor the brightness of the nebula&#39;s young stars, many still surrounded by dusty, planet-forming disks. Orion&#39;s young stars are only about 1 million years old, compared to the Sun&#39;s age of 4.6 billion years. The region&#39;s hottest stars are found in the Trapezium Cluster, the brightest cluster near picture center. Launched into orbit around the Sun on August 25, 2003 Spitzer&#39;s liquid helium coolant ran out in May 2009. The infrared space telescope continues to operate though, its mission scheduled to end on January 30, 2020. Recorded in 2010, this false color view is from two channels that still remain sensitive to infrared light at Spitzer&#39;s warmer operating temperatures.\&#34;,\&#34;hdurl\&#34;:\&#34;https://apod.nasa.gov/apod/image/1908/orion2010_spitzer.jpg\&#34;,\&#34;media_type\&#34;:\&#34;image\&#34;,\&#34;service_version\&#34;:\&#34;v1\&#34;,\&#34;title\&#34;:\&#34;Spitzer&#39;s Orion\&#34;,\&#34;url\&#34;:\&#34;https://apod.nasa.gov/apod/image/1908/orion2010_spitzerMedRC.jpg\&#34;}&#34;
+    }
+}
+</code></pre>
+<p>Update the common file : .../kore/common.kt</p>
+<pre><code>package xyz.mlumeau.kosmos.kore
+
+import xyz.mlumeau.kosmos.kore.data.APODRepositoryCacheImpl
+
+
+expect fun platformName(): String
+
+fun createApplicationScreenMessage(): String {
+    return &#34;Kotlin Rocks on ${platformName()}&#34;
+}
+
+internal fun helloCoroutine() {
+    println(&#34;Hello Coroutines!&#34;)
+}
+
+expect fun requestAPOD(
+    apodRepositoryCache: APODRepositoryCacheImpl,
+    completion: (APOD) -&gt; Unit,
+    failure: () -&gt; Unit
+)
+</code></pre>
+<p>Now edit the android directory : workshop-kmp/kore/src/androidMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt</p>
+<pre><code>package xyz.mlumeau.kosmos.kore
+
+import xyz.mlumeau.kosmos.kore.data.APODRepositoryCacheImpl
+
+actual fun platformName(): String {
+    return &#34;Android&#34;
+}
+
+actual fun requestAPOD(
+    apodRepositoryCache: APODRepositoryCacheImpl,
+    completion: (APOD) -&gt; Unit,
+    failure: () -&gt; Unit
+) {
+    TODO(&#34;The Android app must use the suspend function instead.&#34;)
+}
+</code></pre>
+<p>In the Android main project &#34;androidApp&#34;, update the MainActivity :</p>
+<p>Remove the TextView and add an Image, a title, a text and a progressbar in res/layout/activity_main.xml</p>
+<pre><code>&lt;?xml version=&#34;1.0&#34; encoding=&#34;utf-8&#34;?&gt;
+
+&lt;RelativeLayout
+        xmlns:android=&#34;http://schemas.android.com/apk/res/android&#34;
+        xmlns:tools=&#34;http://schemas.android.com/tools&#34;
+        xmlns:app=&#34;http://schemas.android.com/apk/res-auto&#34;
+        android:layout_width=&#34;match_parent&#34;
+        android:layout_height=&#34;match_parent&#34;
+        tools:context=&#34;.views.MainActivity&#34;&gt;
+    &lt;ScrollView android:layout_width=&#34;match_parent&#34; android:layout_height=&#34;wrap_content&#34;&gt;
+        &lt;androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width=&#34;match_parent&#34;
+                android:layout_height=&#34;wrap_content&#34;
+                android:paddingBottom=&#34;16dp&#34;&gt;
+
+            &lt;ImageView android:id=&#34;@+id/apod_iv&#34;
+                       android:layout_width=&#34;match_parent&#34;
+                       android:layout_height=&#34;0dp&#34;
+                       android:scaleType=&#34;centerCrop&#34;
+                       app:layout_constraintDimensionRatio=&#34;1:1&#34;
+                       app:layout_constraintTop_toTopOf=&#34;parent&#34;
+                       android:contentDescription=&#34;@string/astronomy_picture_of_the_day&#34;/&gt;
+
+            &lt;TextView
+                    android:id=&#34;@+id/title_tv&#34;
+                    android:textStyle=&#34;bold&#34;
+                    android:layout_width=&#34;wrap_content&#34;
+                    android:layout_height=&#34;wrap_content&#34;
+                    app:layout_constraintLeft_toLeftOf=&#34;parent&#34;
+                    app:layout_constraintRight_toRightOf=&#34;parent&#34;
+                    android:layout_marginTop=&#34;32dp&#34; app:layout_constraintTop_toBottomOf=&#34;@+id/apod_iv&#34;
+                    android:layout_marginLeft=&#34;16dp&#34; android:layout_marginRight=&#34;16dp&#34;/&gt;
+            &lt;TextView
+                    android:id=&#34;@+id/desc_tv&#34;
+                    android:layout_width=&#34;0dp&#34;
+                    android:layout_height=&#34;wrap_content&#34;
+                    android:ellipsize=&#34;end&#34;
+                    app:layout_constraintLeft_toLeftOf=&#34;parent&#34;
+                    app:layout_constraintRight_toRightOf=&#34;parent&#34;
+                    app:layout_constraintStart_toStartOf=&#34;parent&#34; android:layout_marginStart=&#34;16dp&#34;
+                    app:layout_constraintEnd_toEndOf=&#34;parent&#34; android:layout_marginEnd=&#34;16dp&#34;
+                    android:layout_marginTop=&#34;16dp&#34;
+                    app:layout_constraintTop_toBottomOf=&#34;@+id/title_tv&#34;/&gt;
+
+        &lt;/androidx.constraintlayout.widget.ConstraintLayout&gt;
+    &lt;/ScrollView&gt;
+
+    &lt;ProgressBar
+            android:id=&#34;@+id/progress&#34;
+            android:indeterminate=&#34;true&#34;
+            android:layout_width=&#34;wrap_content&#34; android:layout_height=&#34;wrap_content&#34;
+            app:layout_constraintEnd_toEndOf=&#34;parent&#34; android:layout_marginEnd=&#34;8dp&#34;
+            android:layout_centerInParent=&#34;true&#34;
+            /&gt;
+
+&lt;/RelativeLayout&gt;
+</code></pre>
+<p>Handle these views in java/xyz.mlumeau.kosmos.views/MainActivity (Kotlin file)</p>
+<pre><code>package xyz.mlumeau.kosmos.views
+
+import android.os.Bundle
+import android.view.View
+import androidx.appcompat.app.AppCompatActivity
+import com.squareup.picasso.Picasso
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import xyz.mlumeau.kosmos.R
+import xyz.mlumeau.kosmos.kore.APOD
+import xyz.mlumeau.kosmos.kore.createApplicationScreenMessage
+import xyz.mlumeau.kosmos.kore.data.APODRepositoryCache
+import xyz.mlumeau.kosmos.kore.data.APODRepositoryCacheImpl
+
+class MainActivity : AppCompatActivity() {
+
+    private val apodRepository: APODRepositoryCache = APODRepositoryCacheImpl()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        title_tv.text = createApplicationScreenMessage()
+
+        getAPOD()
+    }
+
+    private fun updateAPODData(apod: APOD) {
+        title_tv.text = apod.title
+        desc_tv.text = apod.explanation
+        if (apod.media_type == &#34;image&#34; &amp;&amp; !apod.url.isNullOrEmpty()) {
+            Picasso.get().load(apod.url).fit().centerCrop().into(apod_iv)
+        } else {
+            apod_iv.visibility = View.GONE
+        }
+        progress.visibility = View.GONE
+    }
+
+    private fun getAPOD() {
+        GlobalScope.launch {
+            apodRepository.getAPOD()?.let { apod -&gt;
+                withContext(Dispatchers.Main) {
+                    updateAPODData(apod)
+                }
+            }
+        }
+    }
+}
+</code></pre>
+<p>Run it and you should see :<br><img alt="image_caption" src="img/3caccf69e2656ac6.png"></p>
+<h2 is-upgraded>For mac user :</h2>
 
 
       </google-codelab-step>
