@@ -72,22 +72,22 @@
 <p>Clone the workshop project repository :</p>
 <pre><code>git clone https://github.com/mlumeau/workshop-kmp.git
 </code></pre>
-<p>Checkout the branch step_two_hellokotlinmp :</p>
+<p>Checkout the branch <code>step_one_setup</code> :</p>
 <pre><code>cd workshop-kmp
-git checkout step_two_hellokotlinmp
+git checkout step_one_setup
 </code></pre>
 <p>This project contain an Android app, a library and an iOS project.</p>
 <h3 is-upgraded>Launch the Android Studio IDE and open the project.</h3>
 <p>The project should sync and you should be able to compile and run the Android application on an emulator or a real device.</p>
 <h3 is-upgraded>Let&#39;s check that it works!</h3>
-<p>You should see something like :<br><img alt="image_caption" src="img/6adc87008ad3b6f0.png"></p>
+<p>You should see a blank screen :<br><img alt="image_caption" src="img/6adc87008ad3b6f0.png"></p>
 <aside class="special"><p>In the project, you can see the kore module which will contain the code for the multiplatform Android/iOS library.</p>
 </aside>
-<h3 is-upgraded>For mac user :</h3>
+<h3 is-upgraded>For Mac users :</h3>
 <p>First you have to prepare the framework for iOS</p>
 <pre><code>./gradlew :kore:packForXCode 
 </code></pre>
-<p>It creates the directory kore/build/xcode-frameworks which contains a gradlew executable and the framework for Xcode.</p>
+<p>It creates the directory <code>kore/build/xcode-frameworks</code> which contains a gradlew executable and the framework for Xcode.</p>
 <p>Now install the pods :</p>
 <pre><code>cd iosApp/kosmos
 pod install
@@ -100,16 +100,17 @@ rm Podfile.lock
 pod install
 </code></pre>
 <h3 is-upgraded>Now you can open the project in Xcode</h3>
-<p>by clicking on ../workshop-kmp/iosApp/kosmos/kosmos.xcworkspace</p>
-<p>You can compile and run the project on an iOS emulator :<br><img alt="image_caption" src="img/56d554d56953538c.png"></p>
+<p>by opening the workspace file : <code>../workshop-kmp/iosApp/kosmos/kosmos.xcworkspace</code></p>
+<p>You can now compile and run the project on an iOS emulator or on a real device.</p>
+<p>You should see a blank screen :<br><img alt="image_caption" src="img/56d554d56953538c.png"></p>
 <h3 is-upgraded>If everything&#39;s fine, let&#39;s go to the second step !!!</h3>
 
 
       </google-codelab-step>
     
-      <google-codelab-step label="STEP TWO - A very basic KMP project" duration="10">
+      <google-codelab-step label="STEP TWO - A very basic KMP project" duration="12">
         <h3 is-upgraded>In this step, you will implement your first multiplatform code !</h3>
-<p>First add this code in the common directory : kore/src/commonMain/kotlin/xyz/mlumeau/kosmos/kore/common.kt</p>
+<p>First add this code in the common directory : <code>kore/src/commonMain/kotlin/xyz/mlumeau/kosmos/kore/common.kt</code></p>
 <pre><code>package xyz.mlumeau.kosmos.kore
 
 expect fun platformName(): String
@@ -118,19 +119,19 @@ fun createApplicationScreenMessage(): String {
     return &#34;Kotlin Rocks on ${platformName()}&#34;
 }
 </code></pre>
-<aside class="special"><p>The keyword ‘expect&#39; means that you have to implement these function in the specific code.</p>
+<aside class="special"><p>The keyword <code>expect</code> means that you have to implement these function in the specific code (the <code>actual</code> code).</p>
 </aside>
-<p>Now edit the android directory : workshop-kmp/kore/src/androidMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt</p>
+<p>Now edit the android directory : <code>workshop-kmp/kore/src/androidMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt</code></p>
 <pre><code>package xyz.mlumeau.kosmos.kore
 
 actual fun platformName(): String {
     return &#34;Android&#34;
 }
 </code></pre>
-<aside class="special"><p>The keyword ‘actual&#39; corresponds to the ‘expect&#39; in the specific code.</p>
+<aside class="special"><p>The keyword <code>actual</code> corresponds to the <code>expect</code> in the specific code.</p>
 </aside>
 <p>In the Android main project &#34;androidApp&#34;, update the MainActivity :</p>
-<p>Add a TextView in res/layout/activity_main.xml</p>
+<p>Add a TextView in <code>res/layout/activity_main.xml</code></p>
 <pre><code>&lt;?xml version=&#34;1.0&#34; encoding=&#34;utf-8&#34;?&gt;
 
 &lt;RelativeLayout xmlns:android=&#34;http://schemas.android.com/apk/res/android&#34;
@@ -148,7 +149,7 @@ actual fun platformName(): String {
 
 &lt;/RelativeLayout&gt;
 </code></pre>
-<p>Handle this textview in java/xyz.mlumeau.kosmos.views/MainActivity (Kotlin file)</p>
+<p>Handle this textview in <code>java/xyz.mlumeau.kosmos.views/MainActivity</code> (Kotlin file)</p>
 <pre><code>package xyz.mlumeau.kosmos.views
 
 import android.os.Bundle
@@ -167,8 +168,8 @@ class MainActivity : AppCompatActivity() {
 }
 </code></pre>
 <p>Run it and you should see :<br><img alt="image_caption" src="img/a761533ae237d64a.png"></p>
-<h2 is-upgraded>For mac user :</h2>
-<p>Now edit the iOS directory : workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt</p>
+<h3 is-upgraded>For Mac users :</h3>
+<p>Now edit the iOS directory : <code>workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt</code></p>
 <pre><code>package xyz.mlumeau.kosmos.kore
 
 import platform.UIKit.UIDevice
@@ -202,15 +203,15 @@ class MainViewController: UIViewController {
 }
 
 </code></pre>
-<p>You can compile and run the project on an iOS emulator :<br><img alt="image_caption" src="img/3ad1739a7b43816a.png"></p>
+<p>You can now compile and run the project on an iOS emulator or on a real device.<br><img alt="image_caption" src="img/3ad1739a7b43816a.png"></p>
 <h3 is-upgraded>If everything&#39;s fine, let&#39;s go to the step 3 !!!</h3>
 
 
       </google-codelab-step>
     
-      <google-codelab-step label="STEP THREE - Let&#39;s show something" duration="10">
+      <google-codelab-step label="STEP THREE - Let&#39;s show something" duration="20">
         <h3 is-upgraded>In this step, you will implement a local repository to simulate a call to the Nasa API APOD - &#34;Astronomy Picture Of the Day&#34; !</h3>
-<p>First create a common Model : kore/src/commonMain/kotlin/xyz/mlumeau/kosmos/kore/model/APOD.kt</p>
+<p>First create a common Model : <code>kore/src/commonMain/kotlin/xyz/mlumeau/kosmos/kore/model/APOD.kt</code></p>
 <pre><code>package xyz.mlumeau.kosmos.kore.model
 
 import kotlinx.serialization.Optional
@@ -224,7 +225,7 @@ data class APOD(
     @Optional val url: String? = null
 )
 </code></pre>
-<p>Now the repository cache interface : .../kore/data/APODRepositoryCache.kt</p>
+<p>Now the repository cache interface : <code>.../kore/data/APODRepositoryCache.kt</code></p>
 <pre><code>package xyz.mlumeau.kosmos.kore.data
 
 import xyz.mlumeau.kosmos.kore.APOD
@@ -234,7 +235,7 @@ interface APODRepositoryCache {
     fun getAPOD(completion: (APOD) -&gt; Unit, failure: () -&gt; Unit)
 }
 </code></pre>
-<p>And the implementation : .../kore/data/APODRepositoryCache.kt</p>
+<p>And the implementation : <code>.../kore/data/APODRepositoryCacheImpl.kt</code></p>
 <pre><code>package xyz.mlumeau.kosmos.kore.data
 
 import kotlinx.serialization.json.Json
@@ -277,7 +278,7 @@ expect fun requestAPOD(
     failure: () -&gt; Unit
 )
 </code></pre>
-<p>Now edit the android directory : workshop-kmp/kore/src/androidMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt</p>
+<p>Now edit the android directory : <code>workshop-kmp/kore/src/androidMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt</code></p>
 <pre><code>package xyz.mlumeau.kosmos.kore
 
 import xyz.mlumeau.kosmos.kore.data.APODRepositoryCacheImpl
@@ -295,7 +296,7 @@ actual fun requestAPOD(
 }
 </code></pre>
 <p>In the Android main project &#34;androidApp&#34;, update the MainActivity :</p>
-<p>Remove the TextView and add an Image, a title, a text and a progressbar in res/layout/activity_main.xml</p>
+<p>Remove the TextView and add an Image, a title, a text and a progressbar in <code>res/layout/activity_main.xml</code></p>
 <pre><code>&lt;?xml version=&#34;1.0&#34; encoding=&#34;utf-8&#34;?&gt;
 
 &lt;RelativeLayout
@@ -353,7 +354,7 @@ actual fun requestAPOD(
 
 &lt;/RelativeLayout&gt;
 </code></pre>
-<p>Handle these views in java/xyz.mlumeau.kosmos.views/MainActivity (Kotlin file)</p>
+<p>Handle these views in <code>java/xyz.mlumeau.kosmos.views/MainActivity</code> (Kotlin file)</p>
 <pre><code>package xyz.mlumeau.kosmos.views
 
 import android.os.Bundle
@@ -406,8 +407,8 @@ class MainActivity : AppCompatActivity() {
 }
 </code></pre>
 <p>Run it and you should see :<br><img alt="image_caption" src="img/3caccf69e2656ac6.png"></p>
-<h2 is-upgraded>For mac user :</h2>
-<p>Now edit the iOS directory by creating a &#34;dispatchers&#34; file : workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/dispatchers.kt</p>
+<h3 is-upgraded>For Mac users :</h3>
+<p>Now edit the iOS directory by creating a &#34;dispatchers&#34; file : <code>workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/dispatchers.kt</code></p>
 <pre><code>package xyz.mlumeau.kosmos.kore
 
 import kotlinx.coroutines.CoroutineDispatcher
@@ -440,7 +441,7 @@ internal abstract class Scope(
 internal class MainScope : Scope(MainDispatcher())
 </code></pre>
 <p>// TODO : Explain this dispatcher in iOS context...</p>
-<p>Now edit the iOS actual file : workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt</p>
+<p>Now edit the iOS actual file : <code>workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt</code></p>
 <pre><code>package xyz.mlumeau.kosmos.kore
 
 import kotlinx.coroutines.launch
@@ -476,7 +477,7 @@ actual fun requestAPOD(
 </code></pre>
 <p>Back to Xcode !</p>
 <p>If you are familiar with Storyboard, add the progressbar, UIImageView and another textview for description in the MainView (see picture below) and add references to the MainViewController.<br><img alt="image_caption" src="img/b4fb544c213212b6.png"><br>If you prefer, download the <a href="https://github.com/mlumeau/workshop-kmp/blob/step_four_remoterepository/iosApp/kosmos/kosmos/Base.lproj/Main.storyboard" target="_blank">storyboard from the next step</a>.</p>
-<p>And then update the MainViewController code...</p>
+<p>And then update the <code>MainViewController</code> code...</p>
 <pre><code>import UIKit
 import Nuke
 import kore
@@ -529,7 +530,7 @@ private extension MainViewController {
     func onLoadingError() {}
 }
 </code></pre>
-<p>You can compile and run the project on an iOS emulator :<br><img alt="image_caption" src="img/e0141634d78c0ad9.png"></p>
+<p>You can now compile and run the project on an iOS emulator or on a real device.<br><img alt="image_caption" src="img/e0141634d78c0ad9.png"></p>
 <h3 is-upgraded>If everything&#39;s fine, let&#39;s go to the step 4 !!!</h3>
 
 

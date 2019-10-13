@@ -63,10 +63,10 @@ Clone the workshop project repository :
 git clone https://github.com/mlumeau/workshop-kmp.git
 ```
 
-Checkout the branch step_two_hellokotlinmp : 
+Checkout the branch `step_one_setup` : 
 ``` bash
 cd workshop-kmp
-git checkout step_two_hellokotlinmp
+git checkout step_one_setup
 ```
 
 This project contain an Android app, a library and an iOS project.
@@ -76,20 +76,20 @@ This project contain an Android app, a library and an iOS project.
 The project should sync and you should be able to compile and run the Android application on an emulator or a real device. 
 
 #### Let's check that it works!
-You should see something like :
+You should see a blank screen :
 ![image_caption](./img/kmp_android_step1.png)
 
 Positive
 : In the project, you can see the kore module which will contain the code for the multiplatform Android/iOS library.
 
-#### For mac user :
+#### For Mac users :
 First you have to prepare the framework for iOS
 
 ``` bash
 ./gradlew :kore:packForXCode 
 ```
 
-It creates the directory kore/build/xcode-frameworks which contains a gradlew executable and the framework for Xcode.
+It creates the directory `kore/build/xcode-frameworks` which contains a gradlew executable and the framework for Xcode.
 
 Now install the pods :
 ``` bash
@@ -108,19 +108,21 @@ pod install
 ```
 
 #### Now you can open the project in Xcode
-by clicking on ../workshop-kmp/iosApp/kosmos/kosmos.xcworkspace
+by opening the workspace file : `../workshop-kmp/iosApp/kosmos/kosmos.xcworkspace`
 
-You can compile and run the project on an iOS emulator :
+You can now compile and run the project on an iOS emulator or on a real device.
+
+You should see a blank screen :
 ![image_caption](./img/kmp_ios_step1.png)
 
 #### If everything's fine, let's go to the second step !!!
 
 ## STEP TWO - A very basic KMP project
-Duration: 0:10:00
+Duration: 0:12:00
 
 #### In this step, you will implement your first multiplatform code !
 
-First add this code in the common directory : kore/src/commonMain/kotlin/xyz/mlumeau/kosmos/kore/common.kt
+First add this code in the common directory : `kore/src/commonMain/kotlin/xyz/mlumeau/kosmos/kore/common.kt`
 
 ``` Kotlin
 package xyz.mlumeau.kosmos.kore
@@ -133,9 +135,9 @@ fun createApplicationScreenMessage(): String {
 ```
 
 Positive
-: The keyword 'expect' means that you have to implement these function in the specific code.
+: The keyword `expect` means that you have to implement these function in the specific code (the `actual` code).
 
-Now edit the android directory : workshop-kmp/kore/src/androidMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt
+Now edit the android directory : `workshop-kmp/kore/src/androidMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt`
 
 ``` Kotlin
 package xyz.mlumeau.kosmos.kore
@@ -146,11 +148,11 @@ actual fun platformName(): String {
 ```
 
 Positive
-: The keyword 'actual' corresponds to the 'expect' in the specific code.
+: The keyword `actual` corresponds to the `expect` in the specific code.
 
 In the Android main project "androidApp", update the MainActivity :
 
-Add a TextView in res/layout/activity_main.xml
+Add a TextView in `res/layout/activity_main.xml`
 
 ``` XML
 <?xml version="1.0" encoding="utf-8"?>
@@ -171,7 +173,7 @@ Add a TextView in res/layout/activity_main.xml
 </RelativeLayout>
 ```
 
-Handle this textview in java/xyz.mlumeau.kosmos.views/MainActivity (Kotlin file)
+Handle this textview in `java/xyz.mlumeau.kosmos.views/MainActivity` (Kotlin file)
 
 ``` Kotlin
 package xyz.mlumeau.kosmos.views
@@ -195,9 +197,9 @@ class MainActivity : AppCompatActivity() {
 Run it and you should see :
 ![image_caption](./img/kmp_android_step2.png)
 
-### For mac user :
+#### For Mac users :
 
-Now edit the iOS directory : workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt
+Now edit the iOS directory : `workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt`
 
 ``` Kotlin
 package xyz.mlumeau.kosmos.kore
@@ -240,17 +242,17 @@ class MainViewController: UIViewController {
 
 ```
 
-You can compile and run the project on an iOS emulator :
+You can now compile and run the project on an iOS emulator or on a real device.
 ![image_caption](./img/kmp_ios_step2.png)
 
 #### If everything's fine, let's go to the step 3 !!!
 
 ## STEP THREE - Let's show something
-Duration: 0:10:00
+Duration: 0:20:00
 
 #### In this step, you will implement a local repository to simulate a call to the Nasa API APOD - "Astronomy Picture Of the Day" !
 
-First create a common Model : kore/src/commonMain/kotlin/xyz/mlumeau/kosmos/kore/model/APOD.kt
+First create a common Model : `kore/src/commonMain/kotlin/xyz/mlumeau/kosmos/kore/model/APOD.kt`
 
 ``` Kotlin
 package xyz.mlumeau.kosmos.kore.model
@@ -266,7 +268,7 @@ data class APOD(
     @Optional val url: String? = null
 )
 ```
-Now the repository cache interface : .../kore/data/APODRepositoryCache.kt
+Now the repository cache interface : `.../kore/data/APODRepositoryCache.kt`
 
 ``` Kotlin
 package xyz.mlumeau.kosmos.kore.data
@@ -279,7 +281,7 @@ interface APODRepositoryCache {
 }
 ```
 
-And the implementation : .../kore/data/APODRepositoryCacheImpl.kt
+And the implementation : `.../kore/data/APODRepositoryCacheImpl.kt`
 
 ``` Kotlin
 package xyz.mlumeau.kosmos.kore.data
@@ -328,7 +330,7 @@ expect fun requestAPOD(
 )
 ```
 
-Now edit the android directory : workshop-kmp/kore/src/androidMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt
+Now edit the android directory : `workshop-kmp/kore/src/androidMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt`
 
 ``` Kotlin
 package xyz.mlumeau.kosmos.kore
@@ -351,7 +353,7 @@ actual fun requestAPOD(
 
 In the Android main project "androidApp", update the MainActivity :
 
-Remove the TextView and add an Image, a title, a text and a progressbar in res/layout/activity_main.xml
+Remove the TextView and add an Image, a title, a text and a progressbar in `res/layout/activity_main.xml`
 
 ``` XML
 <?xml version="1.0" encoding="utf-8"?>
@@ -412,7 +414,7 @@ Remove the TextView and add an Image, a title, a text and a progressbar in res/l
 </RelativeLayout>
 ```
 
-Handle these views in java/xyz.mlumeau.kosmos.views/MainActivity (Kotlin file)
+Handle these views in `java/xyz.mlumeau.kosmos.views/MainActivity` (Kotlin file)
 
 ``` Kotlin
 package xyz.mlumeau.kosmos.views
@@ -470,9 +472,9 @@ class MainActivity : AppCompatActivity() {
 Run it and you should see :
 ![image_caption](./img/kmp_android_step3.png)
 
-### For mac user :
+#### For Mac users :
 
-Now edit the iOS directory by creating a "dispatchers" file : workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/dispatchers.kt
+Now edit the iOS directory by creating a "dispatchers" file : `workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/dispatchers.kt`
 
 ``` Kotlin
 package xyz.mlumeau.kosmos.kore
@@ -509,7 +511,7 @@ internal class MainScope : Scope(MainDispatcher())
 
 // TODO : Explain this dispatcher in iOS context...
 
-Now edit the iOS actual file : workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt
+Now edit the iOS actual file : `workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt`
 
 ``` Kotlin
 package xyz.mlumeau.kosmos.kore
@@ -552,7 +554,7 @@ If you are familiar with Storyboard, add the progressbar, UIImageView and anothe
 ![image_caption](./img/kmp_ios_storyboard_step3.png)
 If you prefer, download the [storyboard from the next step](https://github.com/mlumeau/workshop-kmp/blob/step_four_remoterepository/iosApp/kosmos/kosmos/Base.lproj/Main.storyboard).
 
-And then update the MainViewController code...
+And then update the `MainViewController` code...
 
 ``` Swift
 import UIKit
@@ -608,7 +610,8 @@ private extension MainViewController {
 }
 ```
 
-You can compile and run the project on an iOS emulator :
+You can now compile and run the project on an iOS emulator or on a real device.
 ![image_caption](./img/kmp_ios_step3.png)
 
 #### If everything's fine, let's go to the step 4 !!!
+
