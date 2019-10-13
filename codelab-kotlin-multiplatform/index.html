@@ -689,6 +689,185 @@ class MainViewController: UIViewController {
 
       </google-codelab-step>
     
+      <google-codelab-step label="STEP FIVE - Architecture" duration="15">
+        <h3 is-upgraded>In this step, you will implement a better architecture in native apps !</h3>
+<p>Nothing to do in the Kore library this time !</p>
+<p>In the Android main project &#34;androidApp&#34;, create a viewmodels directory.</p>
+<p>Add a new class : <code>.../viewmodels/APODViewModel.kt</code></p>
+<pre><code>package xyz.mlumeau.kosmos.viewmodels
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import xyz.mlumeau.kosmos.kore.model.APOD
+import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemote
+
+class APODViewModel(
+    private val apodRepository: APODRepositoryRemote
+) : ScopedViewModel() {
+
+    private var job: Job? = null
+
+    private val _apod = MutableLiveData&lt;APOD&gt;()
+    val apod: LiveData&lt;APOD&gt;
+        get() = _apod
+
+    init {
+        startLoadingData()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        job?.cancel()
+    }
+
+    private fun startLoadingData() {
+        launch {
+            apodRepository.getAPOD()?.let { apod -&gt;
+                withContext(Dispatchers.Main) {
+                    _apod.value = apod
+                }
+            }
+        }
+    }
+}
+</code></pre>
+<p>Add a factory : <code>.../viewmodels/APODViewModelFactory.kt</code></p>
+<pre><code>package xyz.mlumeau.kosmos.viewmodels
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemoteImpl
+
+class APODViewModelFactory : ViewModelProvider.Factory {
+
+    @Suppress(&#34;UNCHECKED_CAST&#34;)
+    override fun &lt;T : ViewModel&gt; create(modelClass: Class&lt;T&gt;): T {
+        require(modelClass == APODViewModel::class.java) { &#34;Unknown ViewModel class&#34; }
+        return APODViewModel(
+            APODRepositoryRemoteImpl()
+        ) as T
+    }
+}
+</code></pre>
+<p>And a Scopped view model : <code>.../viewmodels/ScopedViewModel.kt</code></p>
+<pre><code>package xyz.mlumeau.kosmos.viewmodels
+
+import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlin.coroutines.CoroutineContext
+
+abstract class ScopedViewModel : ViewModel(),
+    CoroutineScope {
+    private val job = Job()
+    val parentJob: Job
+        get() = job
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
+
+    override fun onCleared() {
+        super.onCleared()
+        parentJob.cancel()
+    }
+}
+</code></pre>
+<p>update the <code>java/xyz.mlumeau.kosmos.views/MainActivity</code> (Kotlin file) by replacing the getApod() function with a call to the ViewModel  :</p>
+<pre><code>...
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
+import xyz.mlumeau.kosmos.viewmodels.APODViewModel
+import xyz.mlumeau.kosmos.viewmodels.APODViewModelFactory
+
+class MainActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        title_tv.text = createApplicationScreenMessage()
+
+        // getApod()
+        val model =
+            ViewModelProviders.of(this, APODViewModelFactory())[APODViewModel::class.java]
+        model.apod.observe(this, Observer { apod -&gt; updateAPODData(apod) })
+    }
+</code></pre>
+<p>The function getApod() can be removed.</p>
+<p>Run it to validate the new architecture.</p>
+<h3 is-upgraded>For Mac users :</h3>
+<p>Back to Xcode !</p>
+<p>Create a ViewModels directory.</p>
+<p>Add a new class : <code>.../ViewModels/MainViewModel.kt</code></p>
+<pre><code>import Foundation
+import kore
+
+final class MainViewModel {
+    private let apodRepository: APODRepositoryRemote = APODRepositoryRemoteImpl()
+    var apod: APOD? = nil
+    var onAPODLoaded: ((APOD) -&gt; ())? = nil
+    var onLoadingError: (() -&gt; ())? = nil
+    
+    init() {
+        startLoadingData()
+    }
+    
+    private func startLoadingData() {
+        apodRepository.getAPOD(completion: { apod in
+            self.apod = apod
+            self.onAPODLoaded?(apod)
+            return .init()
+        }, failure: { () in
+            self.onLoadingError?()
+            return .init()
+        })
+    }
+}
+</code></pre>
+<p>Update the <code>MainViewController</code> code by replacing the Repository by the View Model :</p>
+<pre><code>...
+    // private let apodRepository: APODRepositoryRemote = APODRepositoryRemoteImpl()
+    let viewModel = MainViewModel()
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        // startLoadingData()
+        configureUI()
+        configureBinding()
+    }
+ 
+ ...
+
+ private extension MainViewController {
+    
+//    private func startLoadingData() {
+//        apodRepository.getAPOD(completion: { apod in
+//            self.updateAPODData(apod: apod)
+//            return .init()
+//        }, failure: { () in
+//            self.onLoadingError()
+//            return .init()
+//        })
+//    }
+    func configureUI() {
+    }
+    
+    func configureBinding() {
+        viewModel.onAPODLoaded = updateAPODData
+        viewModel.onLoadingError = onLoadingError
+    }
+...
+</code></pre>
+<p>You can now compile and run the project to validate the architecture updates !</p>
+<h3 is-upgraded>If everything&#39;s fine, let&#39;s go to the step 6 !!!</h3>
+
+
+      </google-codelab-step>
+    
   </google-codelab>
 
   <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
