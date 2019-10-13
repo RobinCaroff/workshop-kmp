@@ -273,7 +273,7 @@ Now the repository cache interface : `.../kore/data/APODRepositoryCache.kt`
 ``` Kotlin
 package xyz.mlumeau.kosmos.kore.data
 
-import xyz.mlumeau.kosmos.kore.APOD
+import xyz.mlumeau.kosmos.kore.model.APOD
 
 interface APODRepositoryCache {
     suspend fun getAPOD(): APOD?
@@ -305,7 +305,7 @@ class APODRepositoryCacheImpl : APODRepositoryCache {
 }
 ```
 
-Update the common file : .../kore/common.kt
+Update the common file : `.../kore/common.kt`
 
 ``` Kotlin
 package xyz.mlumeau.kosmos.kore
@@ -429,7 +429,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import xyz.mlumeau.kosmos.R
-import xyz.mlumeau.kosmos.kore.APOD
+import xyz.mlumeau.kosmos.kore.model.APOD
 import xyz.mlumeau.kosmos.kore.createApplicationScreenMessage
 import xyz.mlumeau.kosmos.kore.data.APODRepositoryCache
 import xyz.mlumeau.kosmos.kore.data.APODRepositoryCacheImpl
@@ -614,4 +614,194 @@ You can now compile and run the project on an iOS emulator or on a real device.
 ![image_caption](./img/kmp_ios_step3.png)
 
 #### If everything's fine, let's go to the step 4 !!!
+
+## STEP FOUR - Call the remote API
+Duration: 0:15:00
+
+#### In this step, you will implement a remote repository to call the Nasa API APOD - "Astronomy Picture Of the Day" !
+First create the Nasa API service interface : `.../kore/service/nasa/NasaApi.kt`
+
+``` Kotlin
+package xyz.mlumeau.kosmos.kore.service.nasa
+
+import xyz.mlumeau.kosmos.kore.APOD
+
+internal interface NasaApi {
+    suspend fun getAPOD(): APOD?
+}
+```
+
+And the implementation : `.../kore/service/nasa/NasaApiRemote.kt`
+
+``` Kotlin
+package xyz.mlumeau.kosmos.kore
+
+import io.ktor.client.HttpClient
+import io.ktor.client.call.call
+import io.ktor.client.response.readText
+import io.ktor.http.HttpMethod
+import kotlinx.serialization.json.Json
+import xyz.mlumeau.kosmos.kore.service.nasa.NasaApi
+
+
+internal class NasaAPIRemote(
+    private val client: HttpClient = HttpClient()
+) : NasaApi {
+
+    private suspend fun request(urlString: String): String {
+        return client.call(urlString) {
+            method = HttpMethod.Get
+        }.response.readText()
+    }
+
+    private suspend fun requestAPOD() : APOD {
+        val result = request(APOD_URL)
+
+        return Json.nonstrict.parse(APOD.serializer(), result)
+    }
+
+    override suspend fun getAPOD(): APOD = requestAPOD()
+
+    companion object {
+        const val APOD_URL = "https://api.nasa.gov/planetary/apod?&api_key=DEMO_KEY"
+    }
+}
+```
+
+Now create the remote repository interface : `.../kore/data/APODRepositoryRemote.kt`
+
+``` Kotlin
+package xyz.mlumeau.kosmos.kore.data
+
+import xyz.mlumeau.kosmos.kore.model.APOD
+
+interface APODRepositoryRemote {
+    suspend fun getAPOD(): APOD?
+    fun getAPOD(completion: (APOD) -> Unit, failure: () -> Unit)
+}
+```
+
+And the implementation : `.../kore/data/APODRepositoryRemoteImpl.kt`
+
+``` Kotlin
+package xyz.mlumeau.kosmos.kore.data
+
+import xyz.mlumeau.kosmos.kore.model.APOD
+import xyz.mlumeau.kosmos.kore.NasaAPIRemote
+import xyz.mlumeau.kosmos.kore.requestAPOD
+import xyz.mlumeau.kosmos.kore.service.nasa.NasaApi
+
+class APODRepositoryRemoteImpl : APODRepositoryRemote {
+    private val nasaAPI: NasaApi = NasaAPIRemote()
+
+    override suspend fun getAPOD() = nasaAPI.getAPOD()
+
+    override fun getAPOD(completion: (APOD) -> Unit, failure: () -> Unit) {
+        requestAPOD(this, completion, failure)
+    }
+}
+```
+
+Update the common file : `.../kore/common.kt`
+Add a new function requestApod with a APODRepositoryRemoteImpl parameter.
+Do not remove the other requestApod function !
+
+``` Kotlin
+package xyz.mlumeau.kosmos.kore
+
+...
+import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemoteImpl
+
+...
+expect fun requestAPOD(
+    apodRepositoryRemote: APODRepositoryRemoteImpl,
+    completion: (APOD) -> Unit,
+    failure: () -> Unit
+)
+```
+
+Now edit the android directory : `workshop-kmp/kore/src/androidMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt`
+Add a new function requestApod with a APODRepositoryRemoteImpl parameter.
+Do not remove the other requestApod function !
+
+``` Kotlin
+package xyz.mlumeau.kosmos.kore
+
+...
+import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemoteImpl
+
+...
+actual fun requestAPOD(
+    apodRepositoryRemote: APODRepositoryRemoteImpl,
+    completion: (APOD) -> Unit,
+    failure: () -> Unit
+) {
+    TODO("The Android app must use the suspend function instead.")
+}
+```
+
+In the Android main project "androidApp", update the `java/xyz.mlumeau.kosmos.views/MainActivity` (Kotlin file) by replacing the Cache repository with Remote Repository :
+
+``` Kotlin
+...
+import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemote
+import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemoteImpl
+
+class MainActivity : AppCompatActivity() {
+
+    private val apodRepository: APODRepositoryRemote = APODRepositoryRemoteImpl()
+...
+```
+
+Run it and you should see a new picture : the Astronomy picture of the day !
+Take some time to celebrate !!!
+
+#### For Mac users :
+
+Now edit the iOS actual file : `workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt`
+Add a requestAPOD function for Remote Repository.
+
+``` Kotlin
+package xyz.mlumeau.kosmos.kore
+
+...
+import kotlinx.coroutines.CoroutineScope
+import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemoteImpl
+
+...
+fun getNetworkScope() = MainScope() as CoroutineScope
+
+actual fun requestAPOD(
+    apodRepositoryRemote: APODRepositoryRemoteImpl,
+    completion: (APOD) -> Unit,
+    failure: () -> Unit
+) {
+    getNetworkScope().launch {
+        val apod = apodRepositoryRemote.getAPOD()
+        if (apod != null) {
+            completion(apod)
+        } else {
+            failure()
+        }
+    }
+}
+```
+
+Back to Xcode !
+
+Update the `MainViewController` code by replacing the Cache Repository by a Remote Repository :
+
+``` Swift
+...
+class MainViewController: UIViewController {
+
+    ...
+    private let apodRepository: APODRepositoryRemote = APODRepositoryRemoteImpl()
+ 
+```
+
+You can now compile and run the project on an iOS emulator or on a real device to see the new picture of the day !
+iOS celebration time !!!
+
+#### If everything's fine, let's go to the step 5 !!!
 
