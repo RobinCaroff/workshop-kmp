@@ -273,7 +273,7 @@ Now the repository cache interface : `.../kore/data/APODRepositoryCache.kt`
 ``` Kotlin
 package xyz.mlumeau.kosmos.kore.data
 
-import xyz.mlumeau.kosmos.kore.APOD
+import xyz.mlumeau.kosmos.kore.model.APOD
 
 interface APODRepositoryCache {
     suspend fun getAPOD(): APOD?
@@ -305,7 +305,7 @@ class APODRepositoryCacheImpl : APODRepositoryCache {
 }
 ```
 
-Update the common file : .../kore/common.kt
+Update the common file : `.../kore/common.kt`
 
 ``` Kotlin
 package xyz.mlumeau.kosmos.kore
@@ -429,7 +429,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import xyz.mlumeau.kosmos.R
-import xyz.mlumeau.kosmos.kore.APOD
+import xyz.mlumeau.kosmos.kore.model.APOD
 import xyz.mlumeau.kosmos.kore.createApplicationScreenMessage
 import xyz.mlumeau.kosmos.kore.data.APODRepositoryCache
 import xyz.mlumeau.kosmos.kore.data.APODRepositoryCacheImpl
@@ -615,3 +615,735 @@ You can now compile and run the project on an iOS emulator or on a real device.
 
 #### If everything's fine, let's go to the step 4 !!!
 
+## STEP FOUR - Call the remote API
+Duration: 0:15:00
+
+#### In this step, you will implement a remote repository to call the Nasa API APOD - "Astronomy Picture Of the Day" !
+First create the Nasa API service interface : `.../kore/service/nasa/NasaApi.kt`
+
+``` Kotlin
+package xyz.mlumeau.kosmos.kore.service.nasa
+
+import xyz.mlumeau.kosmos.kore.APOD
+
+internal interface NasaApi {
+    suspend fun getAPOD(): APOD?
+}
+```
+
+And the implementation : `.../kore/service/nasa/NasaApiRemote.kt`
+
+``` Kotlin
+package xyz.mlumeau.kosmos.kore
+
+import io.ktor.client.HttpClient
+import io.ktor.client.call.call
+import io.ktor.client.response.readText
+import io.ktor.http.HttpMethod
+import kotlinx.serialization.json.Json
+import xyz.mlumeau.kosmos.kore.service.nasa.NasaApi
+
+
+internal class NasaAPIRemote(
+    private val client: HttpClient = HttpClient()
+) : NasaApi {
+
+    private suspend fun request(urlString: String): String {
+        return client.call(urlString) {
+            method = HttpMethod.Get
+        }.response.readText()
+    }
+
+    private suspend fun requestAPOD() : APOD {
+        val result = request(APOD_URL)
+
+        return Json.nonstrict.parse(APOD.serializer(), result)
+    }
+
+    override suspend fun getAPOD(): APOD = requestAPOD()
+
+    companion object {
+        const val APOD_URL = "https://api.nasa.gov/planetary/apod?&api_key=DEMO_KEY"
+    }
+}
+```
+
+Now create the remote repository interface : `.../kore/data/APODRepositoryRemote.kt`
+
+``` Kotlin
+package xyz.mlumeau.kosmos.kore.data
+
+import xyz.mlumeau.kosmos.kore.model.APOD
+
+interface APODRepositoryRemote {
+    suspend fun getAPOD(): APOD?
+    fun getAPOD(completion: (APOD) -> Unit, failure: () -> Unit)
+}
+```
+
+And the implementation : `.../kore/data/APODRepositoryRemoteImpl.kt`
+
+``` Kotlin
+package xyz.mlumeau.kosmos.kore.data
+
+import xyz.mlumeau.kosmos.kore.model.APOD
+import xyz.mlumeau.kosmos.kore.NasaAPIRemote
+import xyz.mlumeau.kosmos.kore.requestAPOD
+import xyz.mlumeau.kosmos.kore.service.nasa.NasaApi
+
+class APODRepositoryRemoteImpl : APODRepositoryRemote {
+    private val nasaAPI: NasaApi = NasaAPIRemote()
+
+    override suspend fun getAPOD() = nasaAPI.getAPOD()
+
+    override fun getAPOD(completion: (APOD) -> Unit, failure: () -> Unit) {
+        requestAPOD(this, completion, failure)
+    }
+}
+```
+
+Update the common file : `.../kore/common.kt`
+Add a new function requestApod with a APODRepositoryRemoteImpl parameter.
+Do not remove the other requestApod function !
+
+``` Kotlin
+package xyz.mlumeau.kosmos.kore
+
+...
+import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemoteImpl
+
+...
+expect fun requestAPOD(
+    apodRepositoryRemote: APODRepositoryRemoteImpl,
+    completion: (APOD) -> Unit,
+    failure: () -> Unit
+)
+```
+
+Now edit the android directory : `workshop-kmp/kore/src/androidMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt`
+Add a new function requestApod with a APODRepositoryRemoteImpl parameter.
+Do not remove the other requestApod function !
+
+``` Kotlin
+package xyz.mlumeau.kosmos.kore
+
+...
+import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemoteImpl
+
+...
+actual fun requestAPOD(
+    apodRepositoryRemote: APODRepositoryRemoteImpl,
+    completion: (APOD) -> Unit,
+    failure: () -> Unit
+) {
+    TODO("The Android app must use the suspend function instead.")
+}
+```
+
+In the Android main project "androidApp", update the `java/xyz.mlumeau.kosmos.views/MainActivity` (Kotlin file) by replacing the Cache repository with Remote Repository :
+
+``` Kotlin
+...
+import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemote
+import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemoteImpl
+
+class MainActivity : AppCompatActivity() {
+
+    private val apodRepository: APODRepositoryRemote = APODRepositoryRemoteImpl()
+...
+```
+
+Run it and you should see a new picture : the Astronomy picture of the day !
+Take some time to celebrate !!!
+
+#### For Mac users :
+
+Now edit the iOS actual file : `workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt`
+Add a requestAPOD function for Remote Repository.
+
+``` Kotlin
+package xyz.mlumeau.kosmos.kore
+
+...
+import kotlinx.coroutines.CoroutineScope
+import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemoteImpl
+
+...
+fun getNetworkScope() = MainScope() as CoroutineScope
+
+actual fun requestAPOD(
+    apodRepositoryRemote: APODRepositoryRemoteImpl,
+    completion: (APOD) -> Unit,
+    failure: () -> Unit
+) {
+    getNetworkScope().launch {
+        val apod = apodRepositoryRemote.getAPOD()
+        if (apod != null) {
+            completion(apod)
+        } else {
+            failure()
+        }
+    }
+}
+```
+
+Back to Xcode !
+
+Update the `MainViewController` code by replacing the Cache Repository by a Remote Repository :
+
+``` Swift
+...
+class MainViewController: UIViewController {
+
+    ...
+    private let apodRepository: APODRepositoryRemote = APODRepositoryRemoteImpl()
+ 
+```
+
+You can now compile and run the project on an iOS emulator or on a real device to see the new picture of the day !
+iOS celebration time !!!
+
+#### If everything's fine, let's go to the step 5 !!!
+
+## STEP FIVE - Architecture
+Duration: 0:12:00
+
+#### In this step, you will implement a better architecture in native apps !
+
+Nothing to do in the Kore library this time !
+
+In the Android main project "androidApp", create a viewmodels directory.
+
+Add a new class : `.../viewmodels/APODViewModel.kt`
+
+``` Kotlin
+package xyz.mlumeau.kosmos.viewmodels
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import xyz.mlumeau.kosmos.kore.model.APOD
+import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemote
+
+class APODViewModel(
+    private val apodRepository: APODRepositoryRemote
+) : ScopedViewModel() {
+
+    private var job: Job? = null
+
+    private val _apod = MutableLiveData<APOD>()
+    val apod: LiveData<APOD>
+        get() = _apod
+
+    init {
+        startLoadingData()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        job?.cancel()
+    }
+
+    private fun startLoadingData() {
+        launch {
+            apodRepository.getAPOD()?.let { apod ->
+                withContext(Dispatchers.Main) {
+                    _apod.value = apod
+                }
+            }
+        }
+    }
+}
+```
+
+Add a factory : `.../viewmodels/APODViewModelFactory.kt`
+
+``` Kotlin
+package xyz.mlumeau.kosmos.viewmodels
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemoteImpl
+
+class APODViewModelFactory : ViewModelProvider.Factory {
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        require(modelClass == APODViewModel::class.java) { "Unknown ViewModel class" }
+        return APODViewModel(
+            APODRepositoryRemoteImpl()
+        ) as T
+    }
+}
+```
+
+And a Scopped view model : `.../viewmodels/ScopedViewModel.kt`
+
+``` Kotlin
+package xyz.mlumeau.kosmos.viewmodels
+
+import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlin.coroutines.CoroutineContext
+
+abstract class ScopedViewModel : ViewModel(),
+    CoroutineScope {
+    private val job = Job()
+    val parentJob: Job
+        get() = job
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
+
+    override fun onCleared() {
+        super.onCleared()
+        parentJob.cancel()
+    }
+}
+```
+
+update the `java/xyz.mlumeau.kosmos.views/MainActivity` (Kotlin file) by replacing the getApod() function with a call to the ViewModel  :
+
+``` Kotlin
+...
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
+import xyz.mlumeau.kosmos.viewmodels.APODViewModel
+import xyz.mlumeau.kosmos.viewmodels.APODViewModelFactory
+
+class MainActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        title_tv.text = createApplicationScreenMessage()
+
+        // getApod()
+        val model =
+            ViewModelProviders.of(this, APODViewModelFactory())[APODViewModel::class.java]
+        model.apod.observe(this, Observer { apod -> updateAPODData(apod) })
+    }
+```
+The function getApod() can be removed.
+
+Run it to validate the new architecture.
+
+#### For Mac users :
+
+Back to Xcode !
+
+Create a ViewModels directory.
+
+Add a new class : `.../ViewModels/MainViewModel.kt`
+
+``` Swift
+import Foundation
+import kore
+
+final class MainViewModel {
+    private let apodRepository: APODRepositoryRemote = APODRepositoryRemoteImpl()
+    var apod: APOD? = nil
+    var onAPODLoaded: ((APOD) -> ())? = nil
+    var onLoadingError: (() -> ())? = nil
+    
+    init() {
+        startLoadingData()
+    }
+    
+    private func startLoadingData() {
+        apodRepository.getAPOD(completion: { apod in
+            self.apod = apod
+            self.onAPODLoaded?(apod)
+            return .init()
+        }, failure: { () in
+            self.onLoadingError?()
+            return .init()
+        })
+    }
+}
+```
+
+Update the `MainViewController` code by replacing the Repository by the View Model :
+
+``` Swift
+...
+    // private let apodRepository: APODRepositoryRemote = APODRepositoryRemoteImpl()
+    let viewModel = MainViewModel()
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        // startLoadingData()
+        configureUI()
+        configureBinding()
+    }
+ 
+ ...
+
+ private extension MainViewController {
+    
+//    private func startLoadingData() {
+//        apodRepository.getAPOD(completion: { apod in
+//            self.updateAPODData(apod: apod)
+//            return .init()
+//        }, failure: { () in
+//            self.onLoadingError()
+//            return .init()
+//        })
+//    }
+    func configureUI() {
+    }
+    
+    func configureBinding() {
+        viewModel.onAPODLoaded = updateAPODData
+        viewModel.onLoadingError = onLoadingError
+    }
+...
+```
+
+You can now compile and run the project to validate the architecture updates !
+
+#### If everything's fine, let's go to the step 6 !!!
+
+## STEP SIX - Clean Architecture
+Duration: 0:15:00
+
+#### In this step, you will implement a clean architecture in the Kore Library !
+
+First create a usecase GetAPOD : `.../kore/usecases/GetAPOD.kt`
+
+``` Kotlin
+package xyz.mlumeau.kosmos.usecases
+
+import xyz.mlumeau.kosmos.kore.APOD
+
+interface GetAPOD {
+    suspend operator fun invoke(): APOD?
+    fun getAPOD(completion: (APOD) -> Unit, failure: () -> Unit)
+}
+```
+
+, a usecase GetConnectionState : `.../kore/usecases/GetConnectionState.kt`
+
+``` Kotlin
+package xyz.mlumeau.kosmos.kore.usecases
+
+interface GetConnectionState {
+    fun isConnectedToNetwork(): Boolean
+}
+```
+
+and the GetAPOD implementation : `.../kore/usecases/implementations/GetAPODImpl.kt`
+
+``` Kotlin
+package xyz.mlumeau.kosmos.kore.usecases.implementations
+
+import xyz.mlumeau.kosmos.kore.model.APOD
+import xyz.mlumeau.kosmos.kore.data.APODRepositoryCache
+import xyz.mlumeau.kosmos.kore.data.APODRepositoryCacheImpl
+import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemote
+import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemoteImpl
+import xyz.mlumeau.kosmos.kore.requestAPOD
+import xyz.mlumeau.kosmos.kore.usecases.GetConnectionState
+import xyz.mlumeau.kosmos.usecases.GetAPOD
+
+class GetAPODImpl(private val getConnectionState: GetConnectionState) : GetAPOD {
+
+    private val apodRepositoryCache: APODRepositoryCache = APODRepositoryCacheImpl()
+    private val apodRepositoryRemote: APODRepositoryRemote = APODRepositoryRemoteImpl()
+
+    override suspend fun invoke() = if (getConnectionState.isConnectedToNetwork()) {
+        apodRepositoryRemote.getAPOD()
+    } else {
+        apodRepositoryCache.getAPOD()
+    }
+
+    override fun getAPOD(completion: (APOD) -> Unit, failure: () -> Unit) {
+        requestAPOD(this, completion, failure)
+    }
+}
+```
+
+Now create the remote repository interface : `.../kore/data/APODRepositoryRemote.kt`
+
+``` Kotlin
+package xyz.mlumeau.kosmos.kore.data
+
+import xyz.mlumeau.kosmos.kore.model.APOD
+
+interface APODRepositoryRemote {
+    suspend fun getAPOD(): APOD?
+    fun getAPOD(completion: (APOD) -> Unit, failure: () -> Unit)
+}
+```
+
+and the implementation : `.../kore/data/APODRepositoryRemoteImpl.kt`
+
+``` Kotlin
+package xyz.mlumeau.kosmos.kore.data
+
+import xyz.mlumeau.kosmos.kore.model.APOD
+import xyz.mlumeau.kosmos.kore.NasaAPIRemote
+import xyz.mlumeau.kosmos.kore.requestAPOD
+import xyz.mlumeau.kosmos.kore.service.nasa.NasaApi
+
+class APODRepositoryRemoteImpl : APODRepositoryRemote {
+    private val nasaAPI: NasaApi = NasaAPIRemote()
+
+    override suspend fun getAPOD() = nasaAPI.getAPOD()
+
+    override fun getAPOD(completion: (APOD) -> Unit, failure: () -> Unit) {
+        requestAPOD(this, completion, failure)
+    }
+}
+```
+
+Update the Nasa API : `.../kore/service/nasa/NasaApiRemote.kt`
+
+``` Kotlin
+...
+import kotlinx.coroutines.CoroutineScope
+
+internal class NasaAPIRemote(
+    private val client: HttpClient = HttpClient()
+) : NasaApi {
+...
+}
+
+expect fun getNetworkScope() : CoroutineScope
+```
+
+Now update the repository interfaces and implementations to remove the getAPOD with params function (not the suspend one) :
+`kore/data/APODRepositoryCache.kt`
+
+`kore/data/APODRepositoryCacheImpl.kt`
+
+`kore/data/APODRepositoryRemote.kt`
+
+`kore/data/APODRepositoryRemoteImpl.kt`
+
+``` Kotlin
+// fun getAPOD(completion: (APOD) -> Unit, failure: () -> Unit)
+```
+
+Update the common file : `.../kore/common.kt`
+Replace the two repositories functions with a single usecase function
+
+``` Kotlin
+package xyz.mlumeau.kosmos.kore
+
+// import xyz.mlumeau.kosmos.kore.data.APODRepositoryCacheImpl
+// import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemoteImpl
+import xyz.mlumeau.kosmos.kore.usecases.implementations.GetAPODImpl
+
+...
+
+// expect fun requestAPOD(
+//     apodRepositoryRemote: APODRepositoryRemoteImpl,
+//     completion: (APOD) -> Unit,
+//     failure: () -> Unit
+// )
+
+// expect fun requestAPOD(
+//     apodRepositoryCache: APODRepositoryCacheImpl,
+//     completion: (APOD) -> Unit,
+//     failure: () -> Unit
+// )
+
+expect fun requestAPOD(getAPODImpl: GetAPODImpl, completion: (APOD) -> Unit, failure: () -> Unit)
+```
+
+Now edit the android directory : `workshop-kmp/kore/src/androidMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt`
+Remove the repositories references and replace them with usecases functions
+
+``` Kotlin
+package xyz.mlumeau.kosmos.kore
+
+// import xyz.mlumeau.kosmos.kore.data.APODRepositoryCacheImpl
+// import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemoteImpl
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import xyz.mlumeau.kosmos.kore.usecases.implementations.GetAPODImpl
+
+...
+
+// actual fun requestAPOD(
+//     apodRepositoryRemote: APODRepositoryRemoteImpl,
+//     completion: (APOD) -> Unit,
+//     failure: () -> Unit
+// ) {
+//     TODO("The Android app must use the suspend function instead.")
+// }
+
+// actual fun requestAPOD(
+//     apodRepositoryCache: APODRepositoryCacheImpl,
+//     completion: (APOD) -> Unit,
+//     failure: () -> Unit
+// ) {
+//     TODO("The Android app must use the suspend function instead.")
+// }
+
+actual fun getNetworkScope(): CoroutineScope {
+    return CoroutineScope(Dispatchers.IO)
+}
+
+actual fun requestAPOD(getAPODImpl: GetAPODImpl, completion: (APOD) -> Unit, failure: () -> Unit) {
+    TODO("The Android app must use the suspend function instead.")
+}
+```
+
+In the Android main project "androidApp", 
+
+Update the viewmodel : `.../viewmodels/APODViewModel.kt`
+
+``` Kotlin
+...
+// import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemote
+import xyz.mlumeau.kosmos.usecases.GetAPOD
+
+class APODViewModel(
+    // private val apodRepository: APODRepositoryRemote
+    private val getApodUseCase: GetAPOD
+) : ScopedViewModel() {
+
+    ...
+
+    private fun startLoadingData() {
+        launch {
+            getApodUseCase()?.let { apod ->
+                withContext(Dispatchers.Main) {
+                    _apod.value = apod
+                }
+            }
+        }
+    }
+}
+```
+
+And the factory : `.../viewmodels/APODViewModelFactory.kt`
+
+``` Kotlin
+package xyz.mlumeau.kosmos.viewmodels
+
+import android.content.Context
+import android.net.ConnectivityManager
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import xyz.mlumeau.kosmos.kore.usecases.GetConnectionState
+import xyz.mlumeau.kosmos.kore.usecases.implementations.GetAPODImpl
+import xyz.mlumeau.kosmos.usecases.GetConnectionStateAndroid
+
+class APODViewModelFactory(
+    private val context: Context
+) : ViewModelProvider.Factory {
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        require(modelClass == APODViewModel::class.java) { "Unknown ViewModel class" }
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val getConnectionState: GetConnectionState = GetConnectionStateAndroid(connectivityManager)
+        return APODViewModel(
+            GetAPODImpl(getConnectionState)
+        ) as T
+    }
+}
+```
+
+Update the `java/xyz.mlumeau.kosmos.views/MainActivity` (Kotlin file) to add a context parameter in the factory constructor :
+
+``` Kotlin
+...
+    ViewModelProviders.of(this, APODViewModelFactory(this))[APODViewModel::class.java]
+...
+```
+
+Everything's fine ???
+
+#### For Mac users :
+
+Now edit the iOS actual file : `workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt`
+
+``` Kotlin
+package xyz.mlumeau.kosmos.kore
+
+...
+// import xyz.mlumeau.kosmos.kore.data.APODRepositoryCacheImpl
+// import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemoteImplimport xyz.mlumeau.kosmos.kore.usecases.implementations.GetAPODImpl
+
+...
+
+// fun getNetworkScope() = MainScope() as CoroutineScope
+actual fun getNetworkScope() = MainScope() as CoroutineScope
+
+// actual fun requestAPOD(
+//     apodRepositoryRemote: APODRepositoryRemoteImpl,
+//     completion: (APOD) -> Unit,
+//     failure: () -> Unit
+// ) {
+//     getNetworkScope().launch {
+//         val apod = apodRepositoryRemote.getAPOD()
+//         if (apod != null) {
+//             completion(apod)
+//         } else {
+//             failure()
+//         }
+//     }
+// }
+// 
+// actual fun requestAPOD(
+//     apodRepositoryCache: APODRepositoryCacheImpl,
+//     completion: (APOD) -> Unit,
+//     failure: () -> Unit
+// ) {
+actual fun requestAPOD(getAPODImpl: GetAPODImpl, completion: (APOD) -> Unit, failure: () -> Unit) {
+    MainScope().launch {
+        // val apod = apodRepositoryCache.getAPOD()
+        val apod = getAPODImpl()
+        if (apod != null) {
+            completion(apod)
+        } else {
+            failure()
+        }
+    }
+}
+```
+
+Back to Xcode !
+
+Update the `MainViewController` code by replacing the Cache Repository by a Remote Repository :
+
+``` Swift
+...
+final class MainViewModel {
+    // private let apodRepository: APODRepositoryRemote = APODRepositoryRemoteImpl()
+    private let getConnectionState: GetConnectionState = GetConnectionStateIos()
+    private let getApodUseCase: GetAPOD
+    ...
+    
+    init() {
+        getApodUseCase = GetAPODImpl(getConnectionState: getConnectionState)
+        startLoadingData()
+    }
+    
+    private func startLoadingData() {
+        // apodRepository.getAPOD(completion: { apod in
+        getApodUseCase.getAPOD(completion: { apod in
+            self.apod = apod
+            self.onAPODLoaded?(apod)
+            return .init()
+        }, failure: { () in
+            self.onLoadingError?()
+            return .init()
+        })
+    }
+}
+```
+
+You can now compile and run the project to validate the architecture updates !
+
+#### If everything's fine, let's go to the step 7 !!!
