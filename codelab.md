@@ -509,7 +509,7 @@ internal abstract class Scope(
 internal class MainScope : Scope(MainDispatcher())
 ```
 
-// TODO : Explain this dispatcher in iOS context...
+On iOS, we need to create a dispatcher that will handle our coroutine on the main dispatch queue. Notice that we use the dispatch_async() and dispatch_get_main_queue() functions that should sound familiar if you have worked with the Grand Central Dispatch on iOS before.  
 
 Now edit the iOS actual file : `workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt`
 
