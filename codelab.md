@@ -124,7 +124,7 @@ Duration: 0:12:00
 
 The goal of this step is to define a common method which creates a greetings text and adds spécific implementations for iOS and Android in the Kotlin common code.
 
-As a result, we will creates an Android module and an iOS framework both exposing the same methode `createApplicationScreenMessage` but having different implementatiion.
+As a result, we will creates an Android module and an iOS framework both exposing the same method `createApplicationScreenMessage` but having different implementatiion.
 
 First add this code in the common directory : `kore/src/commonMain/kotlin/xyz/mlumeau/kosmos/kore/common.kt`
 
@@ -284,6 +284,11 @@ interface APODRepositoryCache {
     fun getAPOD(completion: (APOD) -> Unit, failure: () -> Unit)
 }
 ```
+
+Notice that we create to methods with the same purpose.
+
+Positive
+: The `suspend` keyword is not supported in Swift. As we are going to take advantage of coroutines, the Android app will call the `suspend` method but the iOS one will call the regular method with a callback system.
 
 And the implementation : `.../kore/data/APODRepositoryCacheImpl.kt`
 
