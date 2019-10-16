@@ -127,7 +127,7 @@ Duration: 0:12:00
 
 The goal of this step is to define a common method which creates a greetings text and adds spécific implementations for iOS and Android in the Kotlin common code.
 
-As a result, we will creates an Android module and an iOS framework both exposing the same method `createApplicationScreenMessage` but having different implementatiion.
+As a result, we will creates an Android module and an iOS framework both exposing the same method `createApplicationScreenMessage` but having different implementation.
 
 First add this code in the common directory : `kore/src/commonMain/kotlin/xyz/mlumeau/kosmos/kore/common.kt`
 
@@ -523,8 +523,8 @@ internal abstract class Scope(
 
 internal class MainScope : Scope(MainDispatcher())
 ```
-
-On iOS, we need to create a dispatcher that will handle our coroutine on the main dispatch queue. Notice that we use the dispatch_async() and dispatch_get_main_queue() functions that should sound familiar if you have worked with the Grand Central Dispatch on iOS before.  
+Positive
+: On iOS, we need to create a dispatcher that will handle our coroutine on the main dispatch queue. Notice that we use the dispatch_async() and dispatch_get_main_queue() functions that should sound familiar if you have worked with the Grand Central Dispatch on iOS before.  
 
 Now edit the iOS actual file : `workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt`
 
@@ -769,7 +769,7 @@ class MainActivity : AppCompatActivity() {
 ```
 
 Run it and you should see a new picture : the Astronomy picture of the day !
-Take some time to celebrate !!!
+Take some time to celebrate 🎉!!!
 
 #### For Mac users :
 
@@ -816,7 +816,7 @@ class MainViewController: UIViewController {
 ```
 
 You can now compile and run the project on an iOS emulator or on a real device to see the new picture of the day !
-iOS celebration time !!!
+iOS celebration time 🥳!!!
 
 #### If everything's fine, let's go to the step 5 !!!
 
@@ -824,6 +824,9 @@ iOS celebration time !!!
 Duration: 0:12:00
 
 #### In this step, you will implement a better architecture in native apps !
+
+Negative
+: If you're in a hurry, you can skip this step and go directly to [Step 6](/codelab-kotlin-multiplatform/#7). 😉
 
 Nothing to do in the Kore library this time !
 
@@ -1029,7 +1032,7 @@ Duration: 0:15:00
 
 #### In this step, you will implement a dedicated use case for retreiving the APOD data in the Kore Library !
 
-To follow up with on the previous step and follow the single responsability principle, we will create a use case to retreive APOD data. The main goal is to abstract the logic behind this operation. No needs for the final app to know how the data will be retrieved.
+To follow up with on the previous step and follow the single responsability principle, we will create a use case to retrieve APOD data. The main goal is to abstract the logic behind this operation. No needs for the final app to know how the data will be retrieved.
 
 Positive
 : The `GetAPOD` use case will handle the logic of choosing between the remote and the cache repository based on whether or not an internet connection is available. 
