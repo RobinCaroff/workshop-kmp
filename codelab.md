@@ -359,8 +359,9 @@ actual fun requestAPOD(
 }
 ```
 
+Now that we have a data model and a repository to provide it, we will create the user interface to display the data content.
 
-In the Android main project "androidApp", update the MainActivity :
+Let's start with the Android application. In the Android main project "androidApp", update the MainActivity :
 
 Remove the TextView and add an Image, a title, a text and a progressbar in `res/layout/activity_main.xml`
 
