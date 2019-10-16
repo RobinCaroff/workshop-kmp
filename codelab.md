@@ -484,6 +484,8 @@ Run it and you should see :
 
 #### For Mac users :
 
+We will now create the user interface for the iOS application.
+
 Now edit the iOS directory by creating a "dispatchers" file : `workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/dispatchers.kt`
 
 ``` Kotlin
@@ -1019,10 +1021,15 @@ You can now compile and run the project to validate the architecture updates !
 
 #### If everything's fine, let's go to the step 6 !!!
 
-## STEP SIX - Clean Architecture
+## STEP SIX - A dedicated Use Case
 Duration: 0:15:00
 
-#### In this step, you will implement a clean architecture in the Kore Library !
+#### In this step, you will implement a dedicated use case for retreiving the APOD data in the Kore Library !
+
+To follow up with on the previous step and follow the single responsability principle, we will create a use case to retreive APOD data. The main goal is to abstract the logic behind this operation. No needs for the final app to know how the data will be retrieved.
+
+Positive
+: The `GetAPOD` use case will handle the logic of choosing between the remote and the cache repository based on whether or not an internet connection is available. 
 
 First create a usecase GetAPOD : `.../kore/usecases/GetAPOD.kt`
 
