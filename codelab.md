@@ -43,6 +43,9 @@ Duration: 0:04:00
 
 You need [Android Studio](https://developer.android.com/studio/) 3.4+ for the Android part of the tutorial. 
 
+Negative
+: ⚠️ Kotlin MPP is broken with 3.5.1. Please use 3.5.0 or 3.6 preview releases ⚠️
+
 Positive
 : You can also use [IntelliJ IDEA](https://jetbrains.com/idea/) Community or Ultimate edition.
 
