@@ -251,7 +251,7 @@ You can now compile and run the project on an iOS emulator or on a real device.
 
 #### If everything's fine, let's go to the step 3 !!!
 
-## STEP THREE - Let's show something
+## STEP THREE - Local Repository
 Duration: 0:20:00
 
 #### In this step, you will implement a local repository to simulate a call to the Nasa API APOD - "Astronomy Picture Of the Day" !
