@@ -122,6 +122,10 @@ Duration: 0:12:00
 
 #### In this step, you will implement your first multiplatform code !
 
+The goal of this step is to define a common method which creates a greetings text and adds spécific implementations for iOS and Android in the Kotlin common code.
+
+As a result, we will creates an Android module and an iOS framework both exposing the same methode `createApplicationScreenMessage` but having different implementatiion.
+
 First add this code in the common directory : `kore/src/commonMain/kotlin/xyz/mlumeau/kosmos/kore/common.kt`
 
 ``` Kotlin
