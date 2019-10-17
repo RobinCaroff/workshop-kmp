@@ -1341,3 +1341,36 @@ final class MainViewModel {
 You can now compile and run the project to validate the architecture updates !
 
 #### If everything's fine, let's go to the step 7 !!!
+
+## STEP SEVEN - Where to Go From Here?
+Duration: 0:00:00
+
+#### If you reach this step then you are in a very good position to start implementing your own Kotlin Multiplatform code!
+
+Let's think about some improvements we can make to this app.
+
+How about improving the `GetAPOD` use case with a cache management? New APOD data is available every day. Knowing this there is no point making multiple requests to the NASA's API during the same day. We could then have a cache system which stores the APOD data with an associated time. The `APODRepositoryCache` will then be able to serve this persisted data and provide information about its expiration. The `GetAPOD` use case will then be able to decide whether it should use the `APODRepositoryCache` if cached data is available and not expired or the `APODRepositoryRemote` to get fresh data.
+
+Let's modify the `APODRepositoryCache` interface (`xyz.mlumeau.kosmos.kore.data.APODRepositoryCache`) and add two methods: 
+
+``` Kotlin
+package xyz.mlumeau.kosmos.usecases
+
+import xyz.mlumeau.kosmos.kore.APOD
+
+interface APODRepositoryCache {
+    suspend fun getAPOD(): APOD?
+    fun setLastCacheTime(lastCache: Long)
+    fun isProjectsCacheExpired(): Boolean
+}
+```
+
+It's now your turn to create your own Kotlin Multiplatform code.
+
+You should first update the implementation of the `APODRepositoryCache` interface (`APODRepositoryCacheImpl`) to provide persistence capabilites. You can either choose a plateform specific solution or use some Koltin Multiplatform compatible solution such as [SQLdelight](https://www.kotlinresources.com/library/sqldelight/).
+
+Once you have your improved cache system working, you can then update the `GetAPOD` use case implementation (`GetAPODImpl`) to use those new capabilities.
+
+
+Positive
+: You reached the end of this workshop. Thank you very much for attending! We hope you enjoyed discovering this new technology. Keep us posted with your results, projects and discoveries about Kotlin Multiplatform. Have fun 🥳!
