@@ -331,10 +331,6 @@ fun createApplicationScreenMessage(): String {
     return "Kotlin Rocks on ${platformName()}"
 }
 
-internal fun helloCoroutine() {
-    println("Hello Coroutines!")
-}
-
 expect fun requestAPOD(
     apodRepositoryCache: APODRepositoryCacheImpl,
     completion: (APOD) -> Unit,
@@ -541,12 +537,6 @@ actual fun platformName(): String {
             UIDevice.currentDevice.systemVersion
 }
 
-fun showHelloCoroutine() {
-    MainScope().launch {
-        helloCoroutine()
-    }
-}
-
 actual fun requestAPOD(
     apodRepositoryCache: APODRepositoryCacheImpl,
     completion: (APOD) -> Unit,
@@ -649,7 +639,7 @@ internal interface NasaApi {
 And the implementation : `.../kore/service/nasa/NasaApiRemote.kt`
 
 ``` Kotlin
-package xyz.mlumeau.kosmos.kore
+package xyz.mlumeau.kosmos.kore.service.nasa
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.call
@@ -1125,21 +1115,6 @@ class APODRepositoryRemoteImpl : APODRepositoryRemote {
 }
 ```
 
-Update the Nasa API : `.../kore/service/nasa/NasaApiRemote.kt`
-
-``` Kotlin
-...
-import kotlinx.coroutines.CoroutineScope
-
-internal class NasaAPIRemote(
-    private val client: HttpClient = HttpClient()
-) : NasaApi {
-...
-}
-
-expect fun getNetworkScope() : CoroutineScope
-```
-
 Now update the repository interfaces and implementations to remove the getAPOD with params function (not the suspend one) :
 `kore/data/APODRepositoryCache.kt`
 
@@ -1209,10 +1184,6 @@ import xyz.mlumeau.kosmos.kore.usecases.implementations.GetAPODImpl
 // ) {
 //     TODO("The Android app must use the suspend function instead.")
 // }
-
-actual fun getNetworkScope(): CoroutineScope {
-    return CoroutineScope(Dispatchers.IO)
-}
 
 actual fun requestAPOD(getAPODImpl: GetAPODImpl, completion: (APOD) -> Unit, failure: () -> Unit) {
     TODO("The Android app must use the suspend function instead.")
