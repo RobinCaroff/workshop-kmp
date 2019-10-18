@@ -277,10 +277,6 @@ fun createApplicationScreenMessage(): String {
     return &#34;Kotlin Rocks on ${platformName()}&#34;
 }
 
-internal fun helloCoroutine() {
-    println(&#34;Hello Coroutines!&#34;)
-}
-
 expect fun requestAPOD(
     apodRepositoryCache: APODRepositoryCacheImpl,
     completion: (APOD) -&gt; Unit,
@@ -466,12 +462,6 @@ actual fun platformName(): String {
             UIDevice.currentDevice.systemVersion
 }
 
-fun showHelloCoroutine() {
-    MainScope().launch {
-        helloCoroutine()
-    }
-}
-
 actual fun requestAPOD(
     apodRepositoryCache: APODRepositoryCacheImpl,
     completion: (APOD) -&gt; Unit,
@@ -560,7 +550,7 @@ internal interface NasaApi {
 }
 </code></pre>
 <p>And the implementation : <code>.../kore/service/nasa/NasaApiRemote.kt</code></p>
-<pre><code>package xyz.mlumeau.kosmos.kore
+<pre><code>package xyz.mlumeau.kosmos.kore.service.nasa
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.call
@@ -960,18 +950,6 @@ class APODRepositoryRemoteImpl : APODRepositoryRemote {
     }
 }
 </code></pre>
-<p>Update the Nasa API : <code>.../kore/service/nasa/NasaApiRemote.kt</code></p>
-<pre><code>...
-import kotlinx.coroutines.CoroutineScope
-
-internal class NasaAPIRemote(
-    private val client: HttpClient = HttpClient()
-) : NasaApi {
-...
-}
-
-expect fun getNetworkScope() : CoroutineScope
-</code></pre>
 <p>Now update the repository interfaces and implementations to remove the getAPOD with params function (not the suspend one) :<br><code>kore/data/APODRepositoryCache.kt</code></p>
 <p><code>kore/data/APODRepositoryCacheImpl.kt</code></p>
 <p><code>kore/data/APODRepositoryRemote.kt</code></p>
@@ -1027,10 +1005,6 @@ import xyz.mlumeau.kosmos.kore.usecases.implementations.GetAPODImpl
 // ) {
 //     TODO(&#34;The Android app must use the suspend function instead.&#34;)
 // }
-
-actual fun getNetworkScope(): CoroutineScope {
-    return CoroutineScope(Dispatchers.IO)
-}
 
 actual fun requestAPOD(getAPODImpl: GetAPODImpl, completion: (APOD) -&gt; Unit, failure: () -&gt; Unit) {
     TODO(&#34;The Android app must use the suspend function instead.&#34;)
@@ -1192,12 +1166,9 @@ class GetConnectionStateIos: NSObject, GetConnectionState {
         return ret
     }
 }
-``` 
-
-Update the `MainViewModel` code by replacing the Repository by the use case :
-
-``` Swift
-...
+</code></pre>
+<p>Update the <code>MainViewModel</code> code by replacing the Repository by the use case :</p>
+<pre><code>...
 final class MainViewModel {
     // private let apodRepository: APODRepositoryRemote = APODRepositoryRemoteImpl()
     private let getConnectionState: GetConnectionState = GetConnectionStateIos()
@@ -1224,6 +1195,30 @@ final class MainViewModel {
 </code></pre>
 <p>You can now compile and run the project to validate the architecture updates !</p>
 <h3 is-upgraded>If everything&#39;s fine, let&#39;s go to the step 7 !!!</h3>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="STEP SEVEN - Where to Go From Here?" duration="0">
+        <h3 is-upgraded>If you reach this step then you are in a very good position to start implementing your own Kotlin Multiplatform code!</h3>
+<p>Let&#39;s think about some improvements we can make to this app.</p>
+<p>How about improving the <code>GetAPOD</code> use case with a cache management? New APOD data is available every day. Knowing this there is no point making multiple requests to the NASA&#39;s API during the same day. We could then have a cache system which stores the APOD data with an associated time. The <code>APODRepositoryCache</code> will then be able to serve this persisted data and provide information about its expiration. The <code>GetAPOD</code> use case will then be able to decide whether it should use the <code>APODRepositoryCache</code> if cached data is available and not expired or the <code>APODRepositoryRemote</code> to get fresh data.</p>
+<p>Let&#39;s modify the <code>APODRepositoryCache</code> interface (<code>xyz.mlumeau.kosmos.kore.data.APODRepositoryCache</code>) and add two methods:</p>
+<pre><code>package xyz.mlumeau.kosmos.usecases
+
+import xyz.mlumeau.kosmos.kore.APOD
+
+interface APODRepositoryCache {
+    suspend fun getAPOD(): APOD?
+    fun setLastCacheTime(lastCache: Long)
+    fun isProjectsCacheExpired(): Boolean
+}
+</code></pre>
+<p>It&#39;s now your turn to create your own Kotlin Multiplatform code.</p>
+<p>You should first update the implementation of the <code>APODRepositoryCache</code> interface (<code>APODRepositoryCacheImpl</code>) to provide persistence capabilites. You can either choose a plateform specific solution or use some Koltin Multiplatform compatible solution such as <a href="https://www.kotlinresources.com/library/sqldelight/" target="_blank">SQLdelight</a>.</p>
+<p>Once you have your improved cache system working, you can then update the <code>GetAPOD</code> use case implementation (<code>GetAPODImpl</code>) to use those new capabilities.</p>
+<aside class="special"><p>You reached the end of this workshop. Thank you very much for attending! We hope you enjoyed discovering this new technology. Keep us posted with your results, projects and discoveries about Kotlin Multiplatform. Have fun 🥳!</p>
+</aside>
 
 
       </google-codelab-step>

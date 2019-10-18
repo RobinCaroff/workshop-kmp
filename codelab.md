@@ -1372,7 +1372,7 @@ class GetConnectionStateIos: NSObject, GetConnectionState {
         return ret
     }
 }
-``` 
+```
 
 Update the `MainViewModel` code by replacing the Repository by the use case :
 
