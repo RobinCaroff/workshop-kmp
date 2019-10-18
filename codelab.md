@@ -36,7 +36,7 @@ You will learn how to:
 * Use the multiplatform Http client Ktor to call a Json Api 
 
 Positive
-: This codelab is inspired by the Jetbrains [tutorial](https://kotlinlang.org/docs/tutorials/native/mpp-ios-android.html) for the first steps
+: This codelab is inspired by the Jetbrains [tutorial](https://kotlinlang.org/docs/tutorials/native/mpp-ios-android.html) for the first steps. The jetbrains codelab is more detailled on the initial configuration of the project and has very interesting focus on the graddle files. 
 
 ## Environment Setup
 Duration: 0:04:00
@@ -129,7 +129,12 @@ The goal of this step is to define a common method which creates a greetings tex
 
 As a result, we will creates an Android module and an iOS framework both exposing the same method `createApplicationScreenMessage` but having different implementation.
 
-First add this code in the common directory : `kore/src/commonMain/kotlin/xyz/mlumeau/kosmos/kore/common.kt`
+Positive
+: You may have to switch the type of View in the Android Studio Explorer during the codelab :
+**Project** View for editing the Kore Library
+**Android** View for editing the Android App
+
+First add this code in the common directory of the kore library : `kore/src/commonMain/kotlin/xyz/mlumeau/kosmos/kore/common.kt`
 
 ``` Kotlin
 package xyz.mlumeau.kosmos.kore
@@ -222,7 +227,7 @@ actual fun platformName(): String {
 
 Back to Xcode !
 
-If you are familiar with Storyboard, add a "titleTV" TextView in the center of the MainView and set the  reference to the MainViewController.titleTV @IBOutlet.
+If you are familiar with Storyboard, add a "titleTV" TextView in the center of the MainView and set the reference to the MainViewController.titleTV @IBOutlet.
 If you prefer, download the [storyboard from the next step](https://github.com/mlumeau/workshop-kmp/blob/step_three_localrepository/iosApp/kosmos/kosmos/Base.lproj/Main.storyboard).
 
 And then update the MainViewController to handle the "titleTV" textView
@@ -1192,6 +1197,25 @@ actual fun requestAPOD(getAPODImpl: GetAPODImpl, completion: (APOD) -> Unit, fai
 
 In the Android main project "androidApp", 
 
+Add a usecase : `.../usecases/GetConnectionStateAndroid.kt`
+
+``` Kotlin
+package xyz.mlumeau.kosmos.usecases
+
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
+import xyz.mlumeau.kosmos.kore.usecases.GetConnectionState
+
+class GetConnectionStateAndroid(
+    private val connectivityManager: ConnectivityManager
+) : GetConnectionState {
+    override fun isConnectedToNetwork(): Boolean {
+        val activeNetwork: NetworkInfo? = connectivityManager.activeNetworkInfo
+        return activeNetwork?.isConnected == true
+    }
+}
+```
+
 Update the viewmodel : `.../viewmodels/APODViewModel.kt`
 
 ``` Kotlin
@@ -1309,7 +1333,48 @@ actual fun requestAPOD(getAPODImpl: GetAPODImpl, completion: (APOD) -> Unit, fai
 
 Back to Xcode !
 
-Update the `MainViewController` code by replacing the Cache Repository by a Remote Repository :
+Add a usecase : `.../UseCases/GetConnectionStateIos`
+
+``` Swift
+import UIKit
+import SystemConfiguration
+import kore
+
+class GetConnectionStateIos: NSObject, GetConnectionState {
+    func isConnectedToNetwork() -> Bool {
+        var zeroAddress = sockaddr_in(sin_len: 0, sin_family: 0, sin_port: 0, sin_addr: in_addr(s_addr: 0), sin_zero: (0, 0, 0, 0, 0, 0, 0, 0))
+        zeroAddress.sin_len = UInt8(MemoryLayout.size(ofValue: zeroAddress))
+        zeroAddress.sin_family = sa_family_t(AF_INET)
+        
+        let defaultRouteReachability = withUnsafePointer(to: &zeroAddress) {
+            $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {zeroSockAddress in
+                SCNetworkReachabilityCreateWithAddress(nil, zeroSockAddress)
+            }
+        }
+        
+        var flags: SCNetworkReachabilityFlags = SCNetworkReachabilityFlags(rawValue: 0)
+        if SCNetworkReachabilityGetFlags(defaultRouteReachability!, &flags) == false {
+            return false
+        }
+        
+        /* Only Working for WIFI
+         let isReachable = flags == .reachable
+         let needsConnection = flags == .connectionRequired
+         
+         return isReachable && !needsConnection
+         */
+        
+        // Working for Cellular and WIFI
+        let isReachable = (flags.rawValue & UInt32(kSCNetworkFlagsReachable)) != 0
+        let needsConnection = (flags.rawValue & UInt32(kSCNetworkFlagsConnectionRequired)) != 0
+        let ret = (isReachable && !needsConnection)
+        
+        return ret
+    }
+}
+``` 
+
+Update the `MainViewModel` code by replacing the Repository by the use case :
 
 ``` Swift
 ...

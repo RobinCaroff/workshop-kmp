@@ -49,7 +49,7 @@
 <li>Use Coroutines to validate the asynchronous ability</li>
 <li>Use the multiplatform Http client Ktor to call a Json Api</li>
 </ul>
-<aside class="special"><p>This codelab is inspired by the Jetbrains <a href="https://kotlinlang.org/docs/tutorials/native/mpp-ios-android.html" target="_blank">tutorial</a> for the first steps</p>
+<aside class="special"><p>This codelab is inspired by the Jetbrains <a href="https://kotlinlang.org/docs/tutorials/native/mpp-ios-android.html" target="_blank">tutorial</a> for the first steps. The jetbrains codelab is more detailled on the initial configuration of the project and has very interesting focus on the graddle files.</p>
 </aside>
 
 
@@ -57,6 +57,8 @@
     
       <google-codelab-step label="Environment Setup" duration="4">
         <p>You need <a href="https://developer.android.com/studio/" target="_blank">Android Studio</a> 3.4+ for the Android part of the tutorial.</p>
+<aside class="warning"><p>⚠️ Kotlin MPP is broken with 3.5.1. Please use 3.5.0 or 3.6 preview releases ⚠️</p>
+</aside>
 <aside class="special"><p>You can also use <a href="https://jetbrains.com/idea/" target="_blank">IntelliJ IDEA</a> Community or Ultimate edition.</p>
 </aside>
 <p>The Kotlin plugin 1.3.41 or higher should be installed in the IDE. This can be verified via Language &amp; Frameworks | Kotlin Updates section in the Settings (or Preferences) window.</p>
@@ -110,7 +112,11 @@ pod install
     
       <google-codelab-step label="STEP TWO - A very basic KMP project" duration="12">
         <h3 is-upgraded>In this step, you will implement your first multiplatform code !</h3>
-<p>First add this code in the common directory : <code>kore/src/commonMain/kotlin/xyz/mlumeau/kosmos/kore/common.kt</code></p>
+<p>The goal of this step is to define a common method which creates a greetings text and adds spécific implementations for iOS and Android in the Kotlin common code.</p>
+<p>As a result, we will creates an Android module and an iOS framework both exposing the same method <code>createApplicationScreenMessage</code> but having different implementation.</p>
+<aside class="special"><p>You may have to switch the type of View in the Android Studio Explorer during the codelab :<br><strong>Project</strong> View for editing the Kore Library<br><strong>Android</strong> View for editing the Android App</p>
+</aside>
+<p>First add this code in the common directory of the kore library : <code>kore/src/commonMain/kotlin/xyz/mlumeau/kosmos/kore/common.kt</code></p>
 <pre><code>package xyz.mlumeau.kosmos.kore
 
 expect fun platformName(): String
@@ -181,7 +187,7 @@ actual fun platformName(): String {
 }
 </code></pre>
 <p>Back to Xcode !</p>
-<p>If you are familiar with Storyboard, add a &#34;titleTV&#34; TextView in the center of the MainView and set the  reference to the MainViewController.titleTV @IBOutlet.<br>If you prefer, download the <a href="https://github.com/mlumeau/workshop-kmp/blob/step_three_localrepository/iosApp/kosmos/kosmos/Base.lproj/Main.storyboard" target="_blank">storyboard from the next step</a>.</p>
+<p>If you are familiar with Storyboard, add a &#34;titleTV&#34; TextView in the center of the MainView and set the reference to the MainViewController.titleTV @IBOutlet.<br>If you prefer, download the <a href="https://github.com/mlumeau/workshop-kmp/blob/step_three_localrepository/iosApp/kosmos/kosmos/Base.lproj/Main.storyboard" target="_blank">storyboard from the next step</a>.</p>
 <p>And then update the MainViewController to handle the &#34;titleTV&#34; textView</p>
 <pre><code>import UIKit
 import Nuke
@@ -209,7 +215,7 @@ class MainViewController: UIViewController {
 
       </google-codelab-step>
     
-      <google-codelab-step label="STEP THREE - Let&#39;s show something" duration="20">
+      <google-codelab-step label="STEP THREE - Local Repository" duration="20">
         <h3 is-upgraded>In this step, you will implement a local repository to simulate a call to the Nasa API APOD - &#34;Astronomy Picture Of the Day&#34; !</h3>
 <p>First create a common Model : <code>kore/src/commonMain/kotlin/xyz/mlumeau/kosmos/kore/model/APOD.kt</code></p>
 <pre><code>package xyz.mlumeau.kosmos.kore.model
@@ -235,7 +241,10 @@ interface APODRepositoryCache {
     fun getAPOD(completion: (APOD) -&gt; Unit, failure: () -&gt; Unit)
 }
 </code></pre>
-<p>And the implementation : <code>.../kore/data/APODRepositoryCacheImpl.kt</code></p>
+<p>Notice that we create to methods with the same purpose.</p>
+<aside class="special"><p>The <code>suspend</code> keyword is not supported in Swift. As we are going to take advantage of coroutines, the Android app will call the <code>suspend</code> method but the iOS one will call the regular method with a callback system.</p>
+</aside>
+<p>And the implementation : <code>.../kore/data/APODRepositoryCacheImpl.kt</code> which contains the APOD stub in its companion object.</p>
 <pre><code>package xyz.mlumeau.kosmos.kore.data
 
 import kotlinx.serialization.json.Json
@@ -295,7 +304,8 @@ actual fun requestAPOD(
     TODO(&#34;The Android app must use the suspend function instead.&#34;)
 }
 </code></pre>
-<p>In the Android main project &#34;androidApp&#34;, update the MainActivity :</p>
+<p>Now that we have a data model and a repository to provide it, we will create the user interface to display the data content.</p>
+<p>Let&#39;s start with the Android application. In the Android main project &#34;androidApp&#34;, update the MainActivity :</p>
 <p>Remove the TextView and add an Image, a title, a text and a progressbar in <code>res/layout/activity_main.xml</code></p>
 <pre><code>&lt;?xml version=&#34;1.0&#34; encoding=&#34;utf-8&#34;?&gt;
 
@@ -408,6 +418,7 @@ class MainActivity : AppCompatActivity() {
 </code></pre>
 <p>Run it and you should see :<br><img alt="image_caption" src="img/3caccf69e2656ac6.png"></p>
 <h3 is-upgraded>For Mac users :</h3>
+<p>We will now create the user interface for the iOS application.</p>
 <p>Now edit the iOS directory by creating a &#34;dispatchers&#34; file : <code>workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/dispatchers.kt</code></p>
 <pre><code>package xyz.mlumeau.kosmos.kore
 
@@ -440,7 +451,8 @@ internal abstract class Scope(
 
 internal class MainScope : Scope(MainDispatcher())
 </code></pre>
-<p>// TODO : Explain this dispatcher in iOS context...</p>
+<aside class="special"><p>On iOS, we need to create a dispatcher that will handle our coroutine on the main dispatch queue. Notice that we use the dispatch_async() and dispatch_get_main_queue() functions that should sound familiar if you have worked with the Grand Central Dispatch on iOS before.<br></p>
+</aside>
 <p>Now edit the iOS actual file : <code>workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt</code></p>
 <pre><code>package xyz.mlumeau.kosmos.kore
 
@@ -647,7 +659,7 @@ class MainActivity : AppCompatActivity() {
     private val apodRepository: APODRepositoryRemote = APODRepositoryRemoteImpl()
 ...
 </code></pre>
-<p>Run it and you should see a new picture : the Astronomy picture of the day !<br>Take some time to celebrate !!!</p>
+<p>Run it and you should see a new picture : the Astronomy picture of the day !<br>Take some time to celebrate 🎉!!!</p>
 <h3 is-upgraded>For Mac users :</h3>
 <p>Now edit the iOS actual file : <code>workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt</code><br>Add a requestAPOD function for Remote Repository.</p>
 <pre><code>package xyz.mlumeau.kosmos.kore
@@ -683,7 +695,7 @@ class MainViewController: UIViewController {
     private let apodRepository: APODRepositoryRemote = APODRepositoryRemoteImpl()
  
 </code></pre>
-<p>You can now compile and run the project on an iOS emulator or on a real device to see the new picture of the day !<br>iOS celebration time !!!</p>
+<p>You can now compile and run the project on an iOS emulator or on a real device to see the new picture of the day !<br>iOS celebration time 🥳!!!</p>
 <h3 is-upgraded>If everything&#39;s fine, let&#39;s go to the step 5 !!!</h3>
 
 
@@ -691,6 +703,8 @@ class MainViewController: UIViewController {
     
       <google-codelab-step label="STEP FIVE - Architecture" duration="12">
         <h3 is-upgraded>In this step, you will implement a better architecture in native apps !</h3>
+<aside class="warning"><p>If you&#39;re in a hurry, you can skip this step and go directly to <a href="/codelab-kotlin-multiplatform/#7" target="_blank">Step 6</a>. 😉</p>
+</aside>
 <p>Nothing to do in the Kore library this time !</p>
 <p>In the Android main project &#34;androidApp&#34;, create a viewmodels directory.</p>
 <p>Add a new class : <code>.../viewmodels/APODViewModel.kt</code></p>
@@ -868,8 +882,11 @@ final class MainViewModel {
 
       </google-codelab-step>
     
-      <google-codelab-step label="STEP SIX - Clean Architecture" duration="15">
-        <h3 is-upgraded>In this step, you will implement a clean architecture in the Kore Library !</h3>
+      <google-codelab-step label="STEP SIX - A dedicated Use Case" duration="15">
+        <h3 is-upgraded>In this step, you will implement a dedicated use case for retreiving the APOD data in the Kore Library !</h3>
+<p>To follow up with on the previous step and follow the single responsability principle, we will create a use case to retrieve APOD data. The main goal is to abstract the logic behind this operation. No needs for the final app to know how the data will be retrieved.</p>
+<aside class="special"><p>The <code>GetAPOD</code> use case will handle the logic of choosing between the remote and the cache repository based on whether or not an internet connection is available.</p>
+</aside>
 <p>First create a usecase GetAPOD : <code>.../kore/usecases/GetAPOD.kt</code></p>
 <pre><code>package xyz.mlumeau.kosmos.usecases
 
@@ -1020,6 +1037,22 @@ actual fun requestAPOD(getAPODImpl: GetAPODImpl, completion: (APOD) -&gt; Unit, 
 }
 </code></pre>
 <p>In the Android main project &#34;androidApp&#34;,</p>
+<p>Add a usecase : <code>.../usecases/GetConnectionStateAndroid.kt</code></p>
+<pre><code>package xyz.mlumeau.kosmos.usecases
+
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
+import xyz.mlumeau.kosmos.kore.usecases.GetConnectionState
+
+class GetConnectionStateAndroid(
+    private val connectivityManager: ConnectivityManager
+) : GetConnectionState {
+    override fun isConnectedToNetwork(): Boolean {
+        val activeNetwork: NetworkInfo? = connectivityManager.activeNetworkInfo
+        return activeNetwork?.isConnected == true
+    }
+}
+</code></pre>
 <p>Update the viewmodel : <code>.../viewmodels/APODViewModel.kt</code></p>
 <pre><code>...
 // import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemote
@@ -1122,8 +1155,49 @@ actual fun requestAPOD(getAPODImpl: GetAPODImpl, completion: (APOD) -&gt; Unit, 
 }
 </code></pre>
 <p>Back to Xcode !</p>
-<p>Update the <code>MainViewController</code> code by replacing the Cache Repository by a Remote Repository :</p>
-<pre><code>...
+<p>Add a usecase : <code>.../UseCases/GetConnectionStateIos</code></p>
+<pre><code>import UIKit
+import SystemConfiguration
+import kore
+
+class GetConnectionStateIos: NSObject, GetConnectionState {
+    func isConnectedToNetwork() -&gt; Bool {
+        var zeroAddress = sockaddr_in(sin_len: 0, sin_family: 0, sin_port: 0, sin_addr: in_addr(s_addr: 0), sin_zero: (0, 0, 0, 0, 0, 0, 0, 0))
+        zeroAddress.sin_len = UInt8(MemoryLayout.size(ofValue: zeroAddress))
+        zeroAddress.sin_family = sa_family_t(AF_INET)
+        
+        let defaultRouteReachability = withUnsafePointer(to: &amp;zeroAddress) {
+            $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {zeroSockAddress in
+                SCNetworkReachabilityCreateWithAddress(nil, zeroSockAddress)
+            }
+        }
+        
+        var flags: SCNetworkReachabilityFlags = SCNetworkReachabilityFlags(rawValue: 0)
+        if SCNetworkReachabilityGetFlags(defaultRouteReachability!, &amp;flags) == false {
+            return false
+        }
+        
+        /* Only Working for WIFI
+         let isReachable = flags == .reachable
+         let needsConnection = flags == .connectionRequired
+         
+         return isReachable &amp;&amp; !needsConnection
+         */
+        
+        // Working for Cellular and WIFI
+        let isReachable = (flags.rawValue &amp; UInt32(kSCNetworkFlagsReachable)) != 0
+        let needsConnection = (flags.rawValue &amp; UInt32(kSCNetworkFlagsConnectionRequired)) != 0
+        let ret = (isReachable &amp;&amp; !needsConnection)
+        
+        return ret
+    }
+}
+``` 
+
+Update the `MainViewModel` code by replacing the Repository by the use case :
+
+``` Swift
+...
 final class MainViewModel {
     // private let apodRepository: APODRepositoryRemote = APODRepositoryRemoteImpl()
     private let getConnectionState: GetConnectionState = GetConnectionStateIos()
