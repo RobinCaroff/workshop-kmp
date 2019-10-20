@@ -90,17 +90,6 @@ git checkout step_one_setup
 <pre><code>./gradlew :kore:packForXCode 
 </code></pre>
 <p>It creates the directory <code>kore/build/xcode-frameworks</code> which contains a gradlew executable and the framework for Xcode.</p>
-<p>Now install the pods :</p>
-<pre><code>cd iosApp/kosmos
-pod install
-</code></pre>
-<aside class="warning"><p>In case of errors, try to reinstall pods with the last version of cocoapods</p>
-</aside>
-<pre><code>sudo gem install cocoapods
-pod deintegrate
-rm Podfile.lock
-pod install
-</code></pre>
 <h3 is-upgraded>Now you can open the project in Xcode</h3>
 <p>by opening the workspace file : <code>../workshop-kmp/iosApp/kosmos/kosmos.xcworkspace</code></p>
 <p>You can now compile and run the project on an iOS emulator or on a real device.</p>
@@ -174,7 +163,6 @@ class MainActivity : AppCompatActivity() {
 }
 </code></pre>
 <p>Run it and you should see :<br><img alt="image_caption" src="img/a761533ae237d64a.png"></p>
-<h3 is-upgraded>For Mac users :</h3>
 <p>Now edit the iOS directory : <code>workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt</code></p>
 <pre><code>package xyz.mlumeau.kosmos.kore
 
@@ -186,6 +174,7 @@ actual fun platformName(): String {
             UIDevice.currentDevice.systemVersion
 }
 </code></pre>
+<h3 is-upgraded>For Mac users :</h3>
 <p>Back to Xcode !</p>
 <p>If you are familiar with Storyboard, add a &#34;titleTV&#34; TextView in the center of the MainView and set the reference to the MainViewController.titleTV @IBOutlet.<br>If you prefer, download the <a href="https://github.com/mlumeau/workshop-kmp/blob/step_three_localrepository/iosApp/kosmos/kosmos/Base.lproj/Main.storyboard" target="_blank">storyboard from the next step</a>.</p>
 <p>And then update the MainViewController to handle the &#34;titleTV&#34; textView</p>
@@ -413,8 +402,6 @@ class MainActivity : AppCompatActivity() {
 }
 </code></pre>
 <p>Run it and you should see :<br><img alt="image_caption" src="img/3caccf69e2656ac6.png"></p>
-<h3 is-upgraded>For Mac users :</h3>
-<p>We will now create the user interface for the iOS application.</p>
 <p>Now edit the iOS directory by creating a &#34;dispatchers&#34; file : <code>workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/dispatchers.kt</code></p>
 <pre><code>package xyz.mlumeau.kosmos.kore
 
@@ -477,7 +464,8 @@ actual fun requestAPOD(
     }
 }
 </code></pre>
-<p>Back to Xcode !</p>
+<h3 is-upgraded>For Mac users :</h3>
+<p>Back to Xcode ! We will now create the user interface for the iOS application.</p>
 <p>If you are familiar with Storyboard, add the progressbar, UIImageView and another textview for description in the MainView (see picture below) and add references to the MainViewController.<br><img alt="image_caption" src="img/b4fb544c213212b6.png"><br>If you prefer, download the <a href="https://github.com/mlumeau/workshop-kmp/blob/step_four_remoterepository/iosApp/kosmos/kosmos/Base.lproj/Main.storyboard" target="_blank">storyboard from the next step</a>.</p>
 <p>And then update the <code>MainViewController</code> code...</p>
 <pre><code>import UIKit
@@ -543,7 +531,7 @@ private extension MainViewController {
 <p>First create the Nasa API service interface : <code>.../kore/service/nasa/NasaApi.kt</code></p>
 <pre><code>package xyz.mlumeau.kosmos.kore.service.nasa
 
-import xyz.mlumeau.kosmos.kore.APOD
+import xyz.mlumeau.kosmos.kore.model.APOD
 
 internal interface NasaApi {
     suspend fun getAPOD(): APOD?
@@ -650,7 +638,6 @@ class MainActivity : AppCompatActivity() {
 ...
 </code></pre>
 <p>Run it and you should see a new picture : the Astronomy picture of the day !<br>Take some time to celebrate 🎉!!!</p>
-<h3 is-upgraded>For Mac users :</h3>
 <p>Now edit the iOS actual file : <code>workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt</code><br>Add a requestAPOD function for Remote Repository.</p>
 <pre><code>package xyz.mlumeau.kosmos.kore
 
@@ -676,6 +663,7 @@ actual fun requestAPOD(
     }
 }
 </code></pre>
+<h3 is-upgraded>For Mac users :</h3>
 <p>Back to Xcode !</p>
 <p>Update the <code>MainViewController</code> code by replacing the Cache Repository by a Remote Repository :</p>
 <pre><code>...
@@ -880,7 +868,7 @@ final class MainViewModel {
 <p>First create a usecase GetAPOD : <code>.../kore/usecases/GetAPOD.kt</code></p>
 <pre><code>package xyz.mlumeau.kosmos.usecases
 
-import xyz.mlumeau.kosmos.kore.APOD
+import xyz.mlumeau.kosmos.kore.model.APOD
 
 interface GetAPOD {
     suspend operator fun invoke(): APOD?
@@ -1083,7 +1071,6 @@ class APODViewModelFactory(
 ...
 </code></pre>
 <p>Everything&#39;s fine ???</p>
-<h3 is-upgraded>For Mac users :</h3>
 <p>Now edit the iOS actual file : <code>workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt</code></p>
 <pre><code>package xyz.mlumeau.kosmos.kore
 
@@ -1128,6 +1115,7 @@ actual fun requestAPOD(getAPODImpl: GetAPODImpl, completion: (APOD) -&gt; Unit, 
     }
 }
 </code></pre>
+<h3 is-upgraded>For Mac users :</h3>
 <p>Back to Xcode !</p>
 <p>Add a usecase : <code>.../UseCases/GetConnectionStateIos</code></p>
 <pre><code>import UIKit
@@ -1206,7 +1194,7 @@ final class MainViewModel {
 <p>Let&#39;s modify the <code>APODRepositoryCache</code> interface (<code>xyz.mlumeau.kosmos.kore.data.APODRepositoryCache</code>) and add two methods:</p>
 <pre><code>package xyz.mlumeau.kosmos.usecases
 
-import xyz.mlumeau.kosmos.kore.APOD
+import xyz.mlumeau.kosmos.kore.model.APOD
 
 interface APODRepositoryCache {
     suspend fun getAPOD(): APOD?

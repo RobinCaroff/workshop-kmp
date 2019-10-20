@@ -36,7 +36,7 @@ You will learn how to:
 * Use the multiplatform Http client Ktor to call a Json Api 
 
 Positive
-: This codelab is inspired by the Jetbrains [tutorial](https://kotlinlang.org/docs/tutorials/native/mpp-ios-android.html) for the first steps. The jetbrains codelab is more detailled on the initial configuration of the project and has very interesting focus on the graddle files. 
+: This codelab is inspired by the Jetbrains [tutorial](https://kotlinlang.org/docs/tutorials/native/mpp-ios-android.html) for the first steps. The jetbrains codelab is more detailled on the initial configuration of the project and has very interesting focus on the gradle files. 
 
 ## Environment Setup
 Duration: 0:04:00
@@ -93,22 +93,6 @@ First you have to prepare the framework for iOS
 ```
 
 It creates the directory `kore/build/xcode-frameworks` which contains a gradlew executable and the framework for Xcode.
-
-Now install the pods :
-``` bash
-cd iosApp/kosmos
-pod install
-```
-
-Negative
-: In case of errors, try to reinstall pods with the last version of cocoapods
-
-``` bash
-sudo gem install cocoapods
-pod deintegrate
-rm Podfile.lock
-pod install
-```
 
 #### Now you can open the project in Xcode
 by opening the workspace file : `../workshop-kmp/iosApp/kosmos/kosmos.xcworkspace`
@@ -209,8 +193,6 @@ class MainActivity : AppCompatActivity() {
 Run it and you should see :
 ![image_caption](./img/kmp_android_step2.png)
 
-#### For Mac users :
-
 Now edit the iOS directory : `workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt`
 
 ``` Kotlin
@@ -224,6 +206,8 @@ actual fun platformName(): String {
             UIDevice.currentDevice.systemVersion
 }
 ```
+
+#### For Mac users :
 
 Back to Xcode !
 
@@ -486,10 +470,6 @@ class MainActivity : AppCompatActivity() {
 Run it and you should see :
 ![image_caption](./img/kmp_android_step3.png)
 
-#### For Mac users :
-
-We will now create the user interface for the iOS application.
-
 Now edit the iOS directory by creating a "dispatchers" file : `workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/dispatchers.kt`
 
 ``` Kotlin
@@ -557,8 +537,9 @@ actual fun requestAPOD(
     }
 }
 ```
+#### For Mac users :
 
-Back to Xcode !
+Back to Xcode ! We will now create the user interface for the iOS application.
 
 If you are familiar with Storyboard, add the progressbar, UIImageView and another textview for description in the MainView (see picture below) and add references to the MainViewController.
 ![image_caption](./img/kmp_ios_storyboard_step3.png)
@@ -634,7 +615,7 @@ First create the Nasa API service interface : `.../kore/service/nasa/NasaApi.kt`
 ``` Kotlin
 package xyz.mlumeau.kosmos.kore.service.nasa
 
-import xyz.mlumeau.kosmos.kore.APOD
+import xyz.mlumeau.kosmos.kore.model.APOD
 
 internal interface NasaApi {
     suspend fun getAPOD(): APOD?
@@ -766,8 +747,6 @@ class MainActivity : AppCompatActivity() {
 Run it and you should see a new picture : the Astronomy picture of the day !
 Take some time to celebrate 🎉!!!
 
-#### For Mac users :
-
 Now edit the iOS actual file : `workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt`
 Add a requestAPOD function for Remote Repository.
 
@@ -796,6 +775,8 @@ actual fun requestAPOD(
     }
 }
 ```
+
+#### For Mac users :
 
 Back to Xcode !
 
@@ -1037,7 +1018,7 @@ First create a usecase GetAPOD : `.../kore/usecases/GetAPOD.kt`
 ``` Kotlin
 package xyz.mlumeau.kosmos.usecases
 
-import xyz.mlumeau.kosmos.kore.APOD
+import xyz.mlumeau.kosmos.kore.model.APOD
 
 interface GetAPOD {
     suspend operator fun invoke(): APOD?
@@ -1282,8 +1263,6 @@ Update the `java/xyz.mlumeau.kosmos.views/MainActivity` (Kotlin file) to add a c
 
 Everything's fine ???
 
-#### For Mac users :
-
 Now edit the iOS actual file : `workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt`
 
 ``` Kotlin
@@ -1330,6 +1309,8 @@ actual fun requestAPOD(getAPODImpl: GetAPODImpl, completion: (APOD) -> Unit, fai
     }
 }
 ```
+
+#### For Mac users :
 
 Back to Xcode !
 
@@ -1421,7 +1402,7 @@ Let's modify the `APODRepositoryCache` interface (`xyz.mlumeau.kosmos.kore.data.
 ``` Kotlin
 package xyz.mlumeau.kosmos.usecases
 
-import xyz.mlumeau.kosmos.kore.APOD
+import xyz.mlumeau.kosmos.kore.model.APOD
 
 interface APODRepositoryCache {
     suspend fun getAPOD(): APOD?
