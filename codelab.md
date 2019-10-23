@@ -288,7 +288,7 @@ interface APODRepositoryCache {
 }
 ```
 
-Notice that we create to methods with the same purpose.
+Notice that we create two methods with the same purpose.
 
 Positive
 : The `suspend` keyword is not supported in Swift. As we are going to take advantage of coroutines, the Android app will call the `suspend` method but the iOS one will call the regular method with a callback system.
