@@ -1081,40 +1081,6 @@ class GetAPODImpl(private val getConnectionState: GetConnectionState) : GetAPOD 
 }
 ```
 
-Now create the remote repository interface : `.../kore/data/APODRepositoryRemote.kt`
-
-``` Kotlin
-package xyz.mlumeau.kosmos.kore.data
-
-import xyz.mlumeau.kosmos.kore.model.APOD
-
-interface APODRepositoryRemote {
-    suspend fun getAPOD(): APOD?
-    fun getAPOD(completion: (APOD) -> Unit, failure: () -> Unit)
-}
-```
-
-and the implementation : `.../kore/data/APODRepositoryRemoteImpl.kt`
-
-``` Kotlin
-package xyz.mlumeau.kosmos.kore.data
-
-import xyz.mlumeau.kosmos.kore.model.APOD
-import xyz.mlumeau.kosmos.kore.NasaAPIRemote
-import xyz.mlumeau.kosmos.kore.requestAPOD
-import xyz.mlumeau.kosmos.kore.service.nasa.NasaApi
-
-class APODRepositoryRemoteImpl : APODRepositoryRemote {
-    private val nasaAPI: NasaApi = NasaAPIRemote()
-
-    override suspend fun getAPOD() = nasaAPI.getAPOD()
-
-    override fun getAPOD(completion: (APOD) -> Unit, failure: () -> Unit) {
-        requestAPOD(this, completion, failure)
-    }
-}
-```
-
 Now update the repository interfaces and implementations to remove the getAPOD with params function (not the suspend one) :
 `kore/data/APODRepositoryCache.kt`
 
