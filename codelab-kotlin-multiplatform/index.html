@@ -49,7 +49,7 @@
 <li>Use Coroutines to validate the asynchronous ability</li>
 <li>Use the multiplatform Http client Ktor to call a Json Api</li>
 </ul>
-<aside class="special"><p>This codelab is inspired by the Jetbrains <a href="https://kotlinlang.org/docs/tutorials/native/mpp-ios-android.html" target="_blank">tutorial</a> for the first steps. The jetbrains codelab is more detailled on the initial configuration of the project and has very interesting focus on the graddle files.</p>
+<aside class="special"><p>This codelab is inspired by the Jetbrains <a href="https://kotlinlang.org/docs/tutorials/native/mpp-ios-android.html" target="_blank">tutorial</a> for the first steps. The jetbrains codelab is more detailled on the initial configuration of the project and has very interesting focus on the gradle files.</p>
 </aside>
 
 
@@ -258,7 +258,7 @@ class APODRepositoryCacheImpl : APODRepositoryCache {
 <pre><code>package xyz.mlumeau.kosmos.kore
 
 import xyz.mlumeau.kosmos.kore.data.APODRepositoryCacheImpl
-
+import xyz.mlumeau.kosmos.kore.model.APOD
 
 expect fun platformName(): String
 
@@ -276,6 +276,7 @@ expect fun requestAPOD(
 <pre><code>package xyz.mlumeau.kosmos.kore
 
 import xyz.mlumeau.kosmos.kore.data.APODRepositoryCacheImpl
+import xyz.mlumeau.kosmos.kore.model.APOD
 
 actual fun platformName(): String {
     return &#34;Android&#34;
@@ -442,6 +443,7 @@ internal class MainScope : Scope(MainDispatcher())
 import kotlinx.coroutines.launch
 import platform.UIKit.UIDevice
 import xyz.mlumeau.kosmos.kore.data.APODRepositoryCacheImpl
+import xyz.mlumeau.kosmos.kore.model.APOD
 
 actual fun platformName(): String {
     return UIDevice.currentDevice.systemName() +
@@ -637,7 +639,12 @@ class MainActivity : AppCompatActivity() {
     private val apodRepository: APODRepositoryRemote = APODRepositoryRemoteImpl()
 ...
 </code></pre>
-<p>Run it and you should see a new picture : the Astronomy picture of the day !<br>Take some time to celebrate 🎉!!!</p>
+<p>Run it and you should see a new picture : the Astronomy picture of the day !</p>
+<aside class="warning"><p>No picture ? It is a video day ! Call the API with a specific date parameter in the : <code>.../kore/service/nasa/NasaApiRemote.kt</code></p>
+</aside>
+<pre><code>const val APOD_URL = &#34;https://api.nasa.gov/planetary/apod?&amp;api_key=DEMO_KEY&amp;date=2019-10-20&#34;
+</code></pre>
+<p>Take some time to celebrate 🎉!!!</p>
 <p>Now edit the iOS actual file : <code>workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt</code><br>Add a requestAPOD function for Remote Repository.</p>
 <pre><code>package xyz.mlumeau.kosmos.kore
 
@@ -794,7 +801,7 @@ class MainActivity : AppCompatActivity() {
 <h3 is-upgraded>For Mac users :</h3>
 <p>Back to Xcode !</p>
 <p>Create a ViewModels directory.</p>
-<p>Add a new class : <code>.../ViewModels/MainViewModel.kt</code></p>
+<p>Add a new class : <code>.../ViewModels/MainViewModel</code></p>
 <pre><code>import Foundation
 import kore
 
