@@ -312,7 +312,7 @@ Update the common file : `.../kore/common.kt`
 package xyz.mlumeau.kosmos.kore
 
 import xyz.mlumeau.kosmos.kore.data.APODRepositoryCacheImpl
-
+import xyz.mlumeau.kosmos.kore.model.APOD
 
 expect fun platformName(): String
 
@@ -333,6 +333,7 @@ Now edit the android directory : `workshop-kmp/kore/src/androidMain/kotlin/xyz/m
 package xyz.mlumeau.kosmos.kore
 
 import xyz.mlumeau.kosmos.kore.data.APODRepositoryCacheImpl
+import xyz.mlumeau.kosmos.kore.model.APOD
 
 actual fun platformName(): String {
     return "Android"
@@ -515,6 +516,7 @@ package xyz.mlumeau.kosmos.kore
 import kotlinx.coroutines.launch
 import platform.UIKit.UIDevice
 import xyz.mlumeau.kosmos.kore.data.APODRepositoryCacheImpl
+import xyz.mlumeau.kosmos.kore.model.APOD
 
 actual fun platformName(): String {
     return UIDevice.currentDevice.systemName() +
@@ -745,6 +747,14 @@ class MainActivity : AppCompatActivity() {
 ```
 
 Run it and you should see a new picture : the Astronomy picture of the day !
+
+Negative
+: No picture ? It is a video day ! Call the API with a specific date parameter in the : `.../kore/service/nasa/NasaApiRemote.kt`
+
+``` Kotlin
+const val APOD_URL = "https://api.nasa.gov/planetary/apod?&api_key=DEMO_KEY&date=2019-10-20"
+```
+
 Take some time to celebrate 🎉!!!
 
 Now edit the iOS actual file : `workshop-kmp/kore/src/iosMain/kotlin/xyz/mlumeau/kosmos/kore/actual.kt`
@@ -933,7 +943,7 @@ Back to Xcode !
 
 Create a ViewModels directory.
 
-Add a new class : `.../ViewModels/MainViewModel.kt`
+Add a new class : `.../ViewModels/MainViewModel`
 
 ``` Swift
 import Foundation
