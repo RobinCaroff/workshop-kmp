@@ -277,7 +277,7 @@ interface APODRepositoryCache {
 }
 ```
 
-Notice that we create to methods with the same purpose.
+Notice that we create two methods with the same purpose.
 
 Positive
 : The `suspend` keyword is not supported in Swift. As we are going to take advantage of coroutines, the Android app will call the `suspend` method but the iOS one will call the regular method with a callback system.
@@ -1016,7 +1016,7 @@ Positive
 First create a usecase GetAPOD : `.../kore/usecases/GetAPOD.kt`
 
 ``` Kotlin
-package xyz.mlumeau.kosmos.usecases
+package xyz.mlumeau.kosmos.kore.usecases
 
 import xyz.mlumeau.kosmos.kore.model.APOD
 
@@ -1048,7 +1048,7 @@ import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemote
 import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemoteImpl
 import xyz.mlumeau.kosmos.kore.requestAPOD
 import xyz.mlumeau.kosmos.kore.usecases.GetConnectionState
-import xyz.mlumeau.kosmos.usecases.GetAPOD
+import xyz.mlumeau.kosmos.kore.usecases.GetAPOD
 
 class GetAPODImpl(private val getConnectionState: GetConnectionState) : GetAPOD {
 
@@ -1060,40 +1060,6 @@ class GetAPODImpl(private val getConnectionState: GetConnectionState) : GetAPOD 
     } else {
         apodRepositoryCache.getAPOD()
     }
-
-    override fun getAPOD(completion: (APOD) -> Unit, failure: () -> Unit) {
-        requestAPOD(this, completion, failure)
-    }
-}
-```
-
-Now create the remote repository interface : `.../kore/data/APODRepositoryRemote.kt`
-
-``` Kotlin
-package xyz.mlumeau.kosmos.kore.data
-
-import xyz.mlumeau.kosmos.kore.model.APOD
-
-interface APODRepositoryRemote {
-    suspend fun getAPOD(): APOD?
-    fun getAPOD(completion: (APOD) -> Unit, failure: () -> Unit)
-}
-```
-
-and the implementation : `.../kore/data/APODRepositoryRemoteImpl.kt`
-
-``` Kotlin
-package xyz.mlumeau.kosmos.kore.data
-
-import xyz.mlumeau.kosmos.kore.model.APOD
-import xyz.mlumeau.kosmos.kore.NasaAPIRemote
-import xyz.mlumeau.kosmos.kore.requestAPOD
-import xyz.mlumeau.kosmos.kore.service.nasa.NasaApi
-
-class APODRepositoryRemoteImpl : APODRepositoryRemote {
-    private val nasaAPI: NasaApi = NasaAPIRemote()
-
-    override suspend fun getAPOD() = nasaAPI.getAPOD()
 
     override fun getAPOD(completion: (APOD) -> Unit, failure: () -> Unit) {
         requestAPOD(this, completion, failure)
@@ -1202,7 +1168,7 @@ Update the viewmodel : `.../viewmodels/APODViewModel.kt`
 ``` Kotlin
 ...
 // import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemote
-import xyz.mlumeau.kosmos.usecases.GetAPOD
+import xyz.mlumeau.kosmos.kore.usecases.GetAPOD
 
 class APODViewModel(
     // private val apodRepository: APODRepositoryRemote
@@ -1234,7 +1200,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import xyz.mlumeau.kosmos.kore.usecases.GetConnectionState
 import xyz.mlumeau.kosmos.kore.usecases.implementations.GetAPODImpl
-import xyz.mlumeau.kosmos.usecases.GetConnectionStateAndroid
+import xyz.mlumeau.kosmos.kore.usecases.GetConnectionStateAndroid
 
 class APODViewModelFactory(
     private val context: Context
@@ -1400,7 +1366,7 @@ How about improving the `GetAPOD` use case with a cache management? New APOD dat
 Let's modify the `APODRepositoryCache` interface (`xyz.mlumeau.kosmos.kore.data.APODRepositoryCache`) and add two methods: 
 
 ``` Kotlin
-package xyz.mlumeau.kosmos.usecases
+package xyz.mlumeau.kosmos.kore.usecases
 
 import xyz.mlumeau.kosmos.kore.model.APOD
 
