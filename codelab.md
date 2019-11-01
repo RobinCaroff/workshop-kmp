@@ -9,10 +9,10 @@ analytics account: ???
 
 # Workshop Kotlin Multiplatform
 
-## CodeLab Overview
-Duration: 0:02:00
+## STEP ONE - CodeLab Overview and Settings
+Duration: 0:16:00
 
-#### Sharing Kotlin code between iOS and Android 
+### Sharing Kotlin code between iOS and Android 
 
 In this codelab you will create an iOS and Android application, by making use of Kotlin's code sharing features. 
 For Android you'll be using Kotlin/JVM, while for iOS it will be Kotlin/Native.
@@ -38,8 +38,7 @@ You will learn how to:
 Positive
 : This codelab is inspired by the Jetbrains [tutorial](https://kotlinlang.org/docs/tutorials/native/mpp-ios-android.html) for the first steps. The jetbrains codelab is more detailled on the initial configuration of the project and has very interesting focus on the gradle files. 
 
-## Environment Setup
-Duration: 0:04:00
+### Environment Setup
 
 You need [Android Studio](https://developer.android.com/studio/) 3.4+ for the Android part of the tutorial. 
 
@@ -56,10 +55,9 @@ For the iOS part of the tutorial, you need a macOS 10.14+ host with Xcode 10.3+ 
 Negative
 : If you don't fill in the requirements at least for the Android part, please consider pair programming !!!
 
-## STEP ONE - Initialize the project
-Duration: 0:10:00
+### Initialize the project
 
-#### In this step, we check that everything is well configured !
+#### Let's check that everything is well configured !
 
 Clone the workshop project repository : 
 ``` bash
