@@ -43,7 +43,7 @@ Positive
 You need [Android Studio](https://developer.android.com/studio/) 3.4+ for the Android part of the tutorial. 
 
 Negative
-: ⚠️ Kotlin MPP is broken with 3.5.1. Please use 3.5.0 or 3.6 preview releases ⚠️
+: ⚠️ Kotlin MPP is broken with 3.5.1. Please update to 3.5.3+ ⚠️
 
 Positive
 : You can also use [IntelliJ IDEA](https://jetbrains.com/idea/) Community or Ultimate edition.
@@ -251,15 +251,14 @@ First create a common Model : `kore/src/commonMain/kotlin/xyz/mlumeau/kosmos/kor
 ``` Kotlin
 package xyz.mlumeau.kosmos.kore.model
 
-import kotlinx.serialization.Optional
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class APOD(
-    @Optional val explanation: String? = null,
-    @Optional val media_type: String? = null,
-    @Optional val title : String? = null,
-    @Optional val url: String? = null
+    val explanation: String? = null,
+    val media_type: String? = null,
+    val title : String? = null,
+    val url: String? = null
 )
 ```
 Now the repository cache interface : `.../kore/data/APODRepositoryCache.kt`
@@ -628,11 +627,11 @@ And the implementation : `.../kore/service/nasa/NasaApiRemote.kt`
 package xyz.mlumeau.kosmos.kore.service.nasa
 
 import io.ktor.client.HttpClient
-import io.ktor.client.call.call
-import io.ktor.client.response.readText
-import io.ktor.http.HttpMethod
+import io.ktor.client.request.get
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.readText
 import kotlinx.serialization.json.Json
-import xyz.mlumeau.kosmos.kore.service.nasa.NasaApi
+import xyz.mlumeau.kosmos.kore.model.APOD
 
 
 internal class NasaAPIRemote(
@@ -640,9 +639,7 @@ internal class NasaAPIRemote(
 ) : NasaApi {
 
     private suspend fun request(urlString: String): String {
-        return client.call(urlString) {
-            method = HttpMethod.Get
-        }.response.readText()
+        return client.get<HttpResponse>(urlString).readText()
     }
 
     private suspend fun requestAPOD() : APOD {
@@ -678,7 +675,7 @@ And the implementation : `.../kore/data/APODRepositoryRemoteImpl.kt`
 package xyz.mlumeau.kosmos.kore.data
 
 import xyz.mlumeau.kosmos.kore.model.APOD
-import xyz.mlumeau.kosmos.kore.NasaAPIRemote
+import xyz.mlumeau.kosmos.kore.service.nasa.NasaAPIRemote
 import xyz.mlumeau.kosmos.kore.requestAPOD
 import xyz.mlumeau.kosmos.kore.service.nasa.NasaApi
 
@@ -816,7 +813,34 @@ Nothing to do in the Kore library this time !
 
 In the Android main project "androidApp", create a viewmodels directory.
 
-Add a new class : `.../viewmodels/APODViewModel.kt`
+And a new class Scopped view model : `.../viewmodels/ScopedViewModel.kt`
+
+``` Kotlin
+package xyz.mlumeau.kosmos.viewmodels
+
+import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlin.coroutines.CoroutineContext
+
+abstract class ScopedViewModel : ViewModel(),
+    CoroutineScope {
+    private val job = Job()
+    val parentJob: Job
+        get() = job
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
+
+    override fun onCleared() {
+        super.onCleared()
+        parentJob.cancel()
+    }
+}
+```
+
+Add a new class APOD view model : `.../viewmodels/APODViewModel.kt`
 
 ``` Kotlin
 package xyz.mlumeau.kosmos.viewmodels
@@ -882,33 +906,6 @@ class APODViewModelFactory : ViewModelProvider.Factory {
 }
 ```
 
-And a Scopped view model : `.../viewmodels/ScopedViewModel.kt`
-
-``` Kotlin
-package xyz.mlumeau.kosmos.viewmodels
-
-import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlin.coroutines.CoroutineContext
-
-abstract class ScopedViewModel : ViewModel(),
-    CoroutineScope {
-    private val job = Job()
-    val parentJob: Job
-        get() = job
-
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main + job
-
-    override fun onCleared() {
-        super.onCleared()
-        parentJob.cancel()
-    }
-}
-```
-
 update the `java/xyz.mlumeau.kosmos.views/MainActivity` (Kotlin file) by replacing the getApod() function with a call to the ViewModel  :
 
 ``` Kotlin
@@ -961,10 +958,8 @@ final class MainViewModel {
         apodRepository.getAPOD(completion: { apod in
             self.apod = apod
             self.onAPODLoaded?(apod)
-            return .init()
         }, failure: { () in
             self.onLoadingError?()
-            return .init()
         })
     }
 }
@@ -1014,7 +1009,7 @@ You can now compile and run the project to validate the architecture updates !
 ## STEP SIX - A dedicated Use Case
 Duration: 0:15:00
 
-#### In this step, you will implement a dedicated use case for retreiving the APOD data in the Kore Library !
+#### In this step, you will implement a dedicated use case for retrieving the APOD data in the Kore Library !
 
 To follow up with on the previous step and follow the single responsability principle, we will create a use case to retrieve APOD data. The main goal is to abstract the logic behind this operation. No needs for the final app to know how the data will be retrieved.
 
@@ -1208,7 +1203,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import xyz.mlumeau.kosmos.kore.usecases.GetConnectionState
 import xyz.mlumeau.kosmos.kore.usecases.implementations.GetAPODImpl
-import xyz.mlumeau.kosmos.kore.usecases.GetConnectionStateAndroid
+import xyz.mlumeau.kosmos.usecases.GetConnectionStateAndroid
 
 class APODViewModelFactory(
     private val context: Context
