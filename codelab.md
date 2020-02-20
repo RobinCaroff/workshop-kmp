@@ -430,7 +430,7 @@ import xyz.mlumeau.kosmos.kore.createApplicationScreenMessage
 import xyz.mlumeau.kosmos.kore.data.APODRepositoryCache
 import xyz.mlumeau.kosmos.kore.data.APODRepositoryCacheImpl
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private val apodRepository: APODRepositoryCache = APODRepositoryCacheImpl()
 
@@ -454,7 +454,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getAPOD() {
-        GlobalScope.launch {
+        launch(Dispatchers.IO) {
             apodRepository.getAPOD()?.let { apod ->
                 withContext(Dispatchers.Main) {
                     updateAPODData(apod)
@@ -813,33 +813,6 @@ Nothing to do in the Kore library this time !
 
 In the Android main project "androidApp", create a viewmodels directory.
 
-And a new class Scopped view model : `.../viewmodels/ScopedViewModel.kt`
-
-``` Kotlin
-package xyz.mlumeau.kosmos.viewmodels
-
-import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlin.coroutines.CoroutineContext
-
-abstract class ScopedViewModel : ViewModel(),
-    CoroutineScope {
-    private val job = Job()
-    val parentJob: Job
-        get() = job
-
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main + job
-
-    override fun onCleared() {
-        super.onCleared()
-        parentJob.cancel()
-    }
-}
-```
-
 Add a new class APOD view model : `.../viewmodels/APODViewModel.kt`
 
 ``` Kotlin
@@ -856,9 +829,7 @@ import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemote
 
 class APODViewModel(
     private val apodRepository: APODRepositoryRemote
-) : ScopedViewModel() {
-
-    private var job: Job? = null
+) : ViewModel() {
 
     private val _apod = MutableLiveData<APOD>()
     val apod: LiveData<APOD>
@@ -868,17 +839,10 @@ class APODViewModel(
         startLoadingData()
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        job?.cancel()
-    }
-
     private fun startLoadingData() {
-        launch {
+        viewModelScope.launch {
             apodRepository.getAPOD()?.let { apod ->
-                withContext(Dispatchers.Main) {
-                    _apod.value = apod
-                }
+                _apod.value = apod
             }
         }
     }
@@ -924,7 +888,7 @@ class MainActivity : AppCompatActivity() {
 
         // getApod()
         val model =
-            ViewModelProviders.of(this, APODViewModelFactory())[APODViewModel::class.java]
+            ViewModelProvider(this, APODViewModelFactory()).get(APODViewModel::class.java)
         model.apod.observe(this, Observer { apod -> updateAPODData(apod) })
     }
 ```
@@ -1176,16 +1140,14 @@ import xyz.mlumeau.kosmos.kore.usecases.GetAPOD
 class APODViewModel(
     // private val apodRepository: APODRepositoryRemote
     private val getApodUseCase: GetAPOD
-) : ScopedViewModel() {
+) : ViewModel() {
 
     ...
 
     private fun startLoadingData() {
-        launch {
+        viewModelScope.launch {
             getApodUseCase()?.let { apod ->
-                withContext(Dispatchers.Main) {
-                    _apod.value = apod
-                }
+                _apod.value = apod
             }
         }
     }
