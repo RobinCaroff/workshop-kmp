@@ -435,8 +435,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.*
 import xyz.mlumeau.kosmos.R
 import xyz.mlumeau.kosmos.kore.model.APOD
 import xyz.mlumeau.kosmos.kore.data.APODRepositoryCache
@@ -734,33 +733,6 @@ Nothing to do in the Kore library this time !
 
 In the Android main project "androidApp", create a viewmodels directory.
 
-And a new class Scopped view model : `.../viewmodels/ScopedViewModel.kt`
-
-``` Kotlin
-package xyz.mlumeau.kosmos.viewmodels
-
-import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlin.coroutines.CoroutineContext
-
-abstract class ScopedViewModel : ViewModel(),
-    CoroutineScope {
-    private val job = Job()
-    val parentJob: Job
-        get() = job
-
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main + job
-
-    override fun onCleared() {
-        super.onCleared()
-        parentJob.cancel()
-    }
-}
-```
-
 Add a new class APOD view model : `.../viewmodels/APODViewModel.kt`
 
 ``` Kotlin
@@ -768,17 +740,13 @@ package xyz.mlumeau.kosmos.viewmodels
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.withContext
+import androidx.lifecycle.ViewModel
 import xyz.mlumeau.kosmos.kore.data.APODRepositoryRemote
 import xyz.mlumeau.kosmos.kore.model.APOD
 
 class APODViewModel(
     private val apodRepository: APODRepositoryRemote
-) : ScopedViewModel() {
-
-    private var job: Job? = null
+) : ViewModel() {
 
     private val _apod = MutableLiveData<APOD>()
     val apod: LiveData<APOD>
@@ -786,11 +754,6 @@ class APODViewModel(
 
     init {
         startLoadingData()
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        job?.cancel()
     }
 
     private fun startLoadingData() {
@@ -1062,7 +1025,7 @@ import xyz.mlumeau.kosmos.kore.usecases.GetAPOD
 class APODViewModel(
     // private val apodRepository: APODRepositoryRemote
     private val getApodUseCase: GetAPOD
-) : ScopedViewModel() {
+) : ViewModel() {
 
     ...
 
