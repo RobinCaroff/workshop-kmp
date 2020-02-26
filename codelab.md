@@ -107,7 +107,7 @@ Duration: 0:12:00
 
 #### In this step, you will implement your first multiplatform code !
 
-The goal of this step is to define a common method which creates a greetings text and adds spécific implementations for iOS and Android in the Kotlin common code.
+The goal of this step is to define a common method which creates a greetings text and adds specific implementations for iOS and Android in the Kotlin common code.
 
 As a result, we will creates an Android module and an iOS framework both exposing the same method `createApplicationScreenMessage` but having different implementation.
 
@@ -117,7 +117,8 @@ Positive
 **Android** View for editing the Android App
 
 First add this code in the common directory of the kore library : `kore/src/commonMain/kotlin/xyz/mlumeau/kosmos/kore/common.kt`
-IMPORTANT : Don't forget to switch to the **Project** View !!!
+
+⚠️ IMPORTANT : Don't forget to switch to the **Project** View !!!
 
 ``` Kotlin
 package xyz.mlumeau.kosmos.kore
@@ -289,7 +290,7 @@ internal abstract class Scope(
 ```
 
 Positive
-: The `Coroutines` are supported differently on Android (kotlin) and iOS (Swift). As we are going to take advantage of coroutines, the Android and the iOS parts of the kore library will implement different solution.
+: In the common code we are going to use the Kotlin `Coroutines` in order to handle multi-tasking. However coroutines are not currently supported in Swift for that reason, we chose to use coroutines only inside the common Kotlin project (internaly) and we only expose methods with direct results or ones that take callbacks as parameters. As Android and iOS will not provide the same coroutines dispatchers, both project will have to provide their own CoroutineScope to execute coroutines.
 
 Now create the repository cache interface : `.../kore/data/APODRepositoryCache.kt`
 
@@ -302,6 +303,8 @@ interface APODRepositoryCache {
     fun getAPOD(completion: (APOD) -> Unit, failure: () -> Unit)
 }
 ```
+
+This interface offers a way to retrieve APOD data and takes a completion and a failure callbacks as parameters to return the resutl.
 
 And finally the repository cache implementation : `.../kore/data/APODRepositoryCacheImpl.kt` which contains the APOD stub in its companion object.
 
@@ -357,7 +360,7 @@ internal class IOScope : Scope(Dispatchers.IO)
 ```
 
 Positive
-: The `Coroutine` implementation for Android is basic.
+: For the Android project we use the IO dispatcher to execute the coroutines. The Dispatcher is ideal for short background work.
 
 
 Now that we have a data model and a repository to provide it, we will create the user interface to display the data content.
@@ -478,6 +481,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 }
 ```
 
+Positive
+: Notice that the getAPOD completion callback will be called from a background thread. This is why we need to encapsulate view updates in a `runOnUiThread` block.
+
 Run it and you should see :
 ![image_caption](./img/kmp_android_step3.png)
 
@@ -514,7 +520,9 @@ Positive
 Back to Xcode ! We will now create the user interface for the iOS application.
 
 If you are familiar with Storyboard, add the progressbar, UIImageView and another textview for description in the MainView (see picture below) and add references to the MainViewController.
+
 ![image_caption](./img/kmp_ios_storyboard_step3.png)
+
 If you prefer, download the [storyboard from the next step](https://github.com/mlumeau/workshop-kmp/blob/step_four_remoterepository/iosApp/kosmos/kosmos/Base.lproj/Main.storyboard).
 
 And then update the `MainViewController` code...
@@ -773,6 +781,9 @@ class APODViewModel(
 }
 ```
 
+Positive
+: Again notice that the getAPOD completion callback will be called from a background thread. However using the MutableLiveData's `postValue()` method insure that the value will be updated in the main thread.
+
 Add a factory : `.../viewmodels/APODViewModelFactory.kt`
 
 ``` Kotlin
@@ -814,6 +825,10 @@ class MainActivity : AppCompatActivity() {
         model.apod.observe(this, Observer { apod -> updateAPODData(apod) })
     }
 ```
+
+Positive
+: As the apod value is posted by the ViewModel on main thread, we can then remove the `runOnUiThread` from the `updateAPODData` method.
+
 The function getApod() can be removed.
 
 Run it to validate the new architecture.
